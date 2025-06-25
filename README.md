@@ -1,1 +1,1 @@
-# 2025_III_Golf_VLM_Distillation
+# 2025_III_Golf_VLM_Distill

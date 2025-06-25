@@ -1,0 +1,12 @@
+
+dataset/0513_SFTDataset/
+
+experiment_result/test_pose_estimate/
+
+experiment_result/test_pose_estimate_2/
+
+experiment_result/test_pose_estimate_3/
+
+model/gemma3-4b-sft-textonly-2025_06_20_0842/
+
+.idea/
