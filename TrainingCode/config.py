@@ -12,17 +12,21 @@ class TrainingConfig:
     
     def __init__(self):
         # 實驗配置
-        self.exp_name = "gemma3-4b-sft-hitdata-"
+
         self.file_locate = "/tmp/pycharm_project_979/"  # 遠端環境，根據部署地做更改
         
         # 數據配置
         # textonly: 對應 dataset/0513_SFTDataset/text/qa_pairs_sft.json，只包含文字問題
         # hitdata: 對應 dataset/0513_SFTDataset/hitdata/sft_training_data.json，為圖文對資料
-        self.data_type = "hitdata"  # textonly 或 hitdata
-        
+        # mergedata: 對應 dataset/0513_SFTDataset/mergedata/merged_dataset.json，為合併的圖文對與文字資料
+        self.data_type = "mergedata"  # textonly 或 hitdata 或 mergedata
+
         # 模型配置
         self.model_id = "google/gemma-3-27b-pt"
         self.processor_id = "google/gemma-3-27b-it"
+
+        # 實驗名稱配製
+        self.exp_name = self.model_id + self.data_type + "-"
         
         # 訓練配置
         self.num_train_epochs = 5                      # 訓練週期數
@@ -57,6 +61,11 @@ class TrainingConfig:
         self.top_p = 0.95                               # top-p 採樣
         self.temperature = 0.7                          # 採樣溫度
         
+        # 評估配置
+        self.eval_test_count = 5                        # 評估測試樣本數量
+        self.eval_random_select = False                 # 是否隨機選擇評估樣本
+        self.eval_output_dir = "experiment_result"      # 評估結果輸出目錄
+        
     def update_config(self, **kwargs):
         """更新配置參數"""
         for key, value in kwargs.items():
@@ -72,6 +81,8 @@ class TrainingConfig:
             return f"{self.file_locate}dataset/0513_SFTDataset/text/qa_pairs_sft.json"
         elif self.data_type == "hitdata":
             return f"{self.file_locate}dataset/0513_SFTDataset/hitdata/sft_training_data.json"
+        elif self.data_type == "mergedata":
+            return f"{self.file_locate}dataset/0513_SFTDataset/mergedata/merged_dataset.json"
         else:
             raise ValueError(f"未知的數據類型: {self.data_type}")
 
@@ -89,6 +100,9 @@ class TrainingConfig:
         print(f"  注意力實現: {self.attn_implementation}")
         print(f"  Torch 數據類型: {self.torch_dtype}")
         print(f"  Wandb 專案: {self.wandb_project}")
+        print(f"  評估測試數量: {self.eval_test_count}")
+        print(f"  隨機選擇樣本: {self.eval_random_select}")
+        print(f"  評估輸出目錄: {self.eval_output_dir}")
         print("=" * 50)
 
 

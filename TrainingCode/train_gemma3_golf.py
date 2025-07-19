@@ -46,10 +46,11 @@ class GolfDatasetTrainer:
             file_locate = "/tmp/pycharm_project_979/"  # 遠端環境，根據部署地做更改
             
             # 數據配置
-            data_type = "textonly"  # textonly 或 hitdata
+            data_type = "textonly"  # textonly 或 hitdata 或 mergedata
             
             # 模型配置
             model_id = "google/gemma-3-4b-pt"
+            processor_id = "google/gemma-3-4b-it"
             
             # 訓練配置
             num_train_epochs = 15
@@ -62,8 +63,33 @@ class GolfDatasetTrainer:
             lora_dropout = 0.05
             lora_r = 16
             
+            # 圖片處理配置
+            image_scale_percent = 20
+            image_quality = 50
+            
+            # 其他配置
+            torch_dtype = "bfloat16"
+            attn_implementation = "eager"
+            device_map = "auto"
+            max_grad_norm = 0.3
+            warmup_ratio = 0.03
+            lr_scheduler_type = "constant"
+            logging_steps = 1
+            use_wandb = True
+            
             # Wandb配置
             wandb_project = "III-2025-golf"
+            
+            def get_data_path(self):
+                """根據數據類型獲取數據路徑"""
+                if self.data_type == "textonly":
+                    return f"{self.file_locate}dataset/0513_SFTDataset/text/qa_pairs_sft.json"
+                elif self.data_type == "hitdata":
+                    return f"{self.file_locate}dataset/0513_SFTDataset/hitdata/sft_training_data.json"
+                elif self.data_type == "mergedata":
+                    return f"{self.file_locate}dataset/0513_SFTDataset/mergedata/merged_dataset.json"
+                else:
+                    raise ValueError(f"未知的數據類型: {self.data_type}")
             
         return DefaultConfig()
     
@@ -104,7 +130,21 @@ class GolfDatasetTrainer:
         print("正在轉換數據集中的圖片...")
         for entry in dataset:
             for message in entry.get("messages", []):
-                for content in message.get("content", []):
+                content_list = message.get("content", [])
+                
+                # 處理 content 可能是字串的情況
+                if isinstance(content_list, str):
+                    continue  # 跳過純文字內容
+                
+                # 確保 content_list 是列表
+                if not isinstance(content_list, list):
+                    content_list = [content_list]
+                
+                for content in content_list:
+                    # 確保 content 是字典
+                    if not isinstance(content, dict):
+                        continue
+                        
                     if content.get("type") == "image" and isinstance(content.get("image"), str):
                         try:
                             img = self.base64_to_pil(content["image"])
@@ -124,8 +164,8 @@ class GolfDatasetTrainer:
         with open(data_path, "r", encoding="utf-8") as f:
             self.dataset = json.load(f)
         
-        # 如果是 hitdata 類型，需要轉換圖片
-        if self.config.data_type == "hitdata":
+        # 如果是 hitdata 或 mergedata 類型，需要轉換圖片
+        if self.config.data_type in ["hitdata", "mergedata"]:
             self.dataset = self.convert_images_in_dataset(self.dataset)
         
         print(f"數據集載入完成，共 {len(self.dataset)} 筆資料")
@@ -276,7 +316,7 @@ class GolfDatasetTrainer:
         time = datetime.now().strftime("%Y_%m_%d_%H%M")
         
         args = SFTConfig(
-            output_dir=f"model/{self.config.exp_name}{time}",     # directory to save and repository id
+            output_dir=f"{self.config.file_locate}/model/{self.config.exp_name}{time}",     # directory to save and repository id
             num_train_epochs=self.config.num_train_epochs,                         # number of training epochs (從配置讀取)
             per_device_train_batch_size=self.config.per_device_train_batch_size,              # batch size per device during training (從配置讀取)
             gradient_accumulation_steps=self.config.gradient_accumulation_steps,              # number of steps before performing a backward/update pass (從配置讀取)
