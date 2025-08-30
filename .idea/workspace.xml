@@ -5,30 +5,25 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8a52bf99-ee71-49f8-93fc-86f6e8deebcf" name="Changes" comment=".">
-      <change afterPath="$PROJECT_DIR$/TrainingCode/evaluate.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Distill_0513Golf_Data_Gemma3-4b.ipynb.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/TestDistill.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/config/command.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/config/gemma3_accelerate_config.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/config/gemma3_accelerate_config_ds.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/print_27b_model.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/training_scripts.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/utils/Preprocess_Data_0513.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Aya vision-8b_try_output.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Aya vision-8b_try_output.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FineTune_0513Golf_Data_Gemma3-4b.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/FineTune_0513Golf_Data_Gemma3-4b.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FineTune_pose_estimate_Gemma3-4b.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/FineTune_pose_estimate_Gemma3-4b.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FineTune_Gemma3-4b.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/FineTune_Gemma3-4b.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Gemma3-4b_try_output.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Gemma3-4b_try_output.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/TestFineTune.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/TestFineTune.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TrainingCode/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/TrainingCode/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/TrainingCode/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/TrainingCode/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/TrainingCode/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TrainingCode/evaluate.py" beforeDir="false" afterPath="$PROJECT_DIR$/TrainingCode/evaluate.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/TrainingCode/run_training.py" beforeDir="false" afterPath="$PROJECT_DIR$/TrainingCode/run_training.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TrainingCode/train_gemma3_golf.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/dataset/TA_model_FineTune_dataset/all_question_Input.csv" beforeDir="false" afterPath="$PROJECT_DIR$/dataset/TA_model_FineTune_dataset/all_question_Input.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dataset/TA_model_FineTune_dataset/question_Input.csv" beforeDir="false" afterPath="$PROJECT_DIR$/dataset/TA_model_FineTune_dataset/question_Input.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dataset/擊球數據整理/question_Input.csv" beforeDir="false" afterPath="$PROJECT_DIR$/dataset/擊球數據整理/question_Input.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/experiment_result/0513_Dataset_FineTune/model_evaluation_result_2025_06_19_0950.csv" beforeDir="false" afterPath="$PROJECT_DIR$/experiment_result/0513_Dataset_FineTune/model_evaluation_result_2025_06_19_0950.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/experiment_result/0513_Dataset_FineTune/model_evaluation_result_2025_06_19_1000.csv" beforeDir="false" afterPath="$PROJECT_DIR$/experiment_result/0513_Dataset_FineTune/model_evaluation_result_2025_06_19_1000.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/experiment_result/0513_Dataset_FineTune/model_evaluation_result_2025_06_20_0742.csv" beforeDir="false" afterPath="$PROJECT_DIR$/experiment_result/0513_Dataset_FineTune/model_evaluation_result_2025_06_20_0742.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/experiment_result/2025_04_08_1715_test_AyaVision8b_output_result.csv" beforeDir="false" afterPath="$PROJECT_DIR$/experiment_result/2025_04_08_1715_test_AyaVision8b_output_result.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/experiment_result/2025_04_08_1721_test_Gemma3-4b_output_result.csv" beforeDir="false" afterPath="$PROJECT_DIR$/experiment_result/2025_04_08_1721_test_Gemma3-4b_output_result.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/experiment_result/test_AyaVision8b_output_result.csv" beforeDir="false" afterPath="$PROJECT_DIR$/experiment_result/test_AyaVision8b_output_result.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/experiment_result/test_Gemma3-4b_fp16_output_result.csv" beforeDir="false" afterPath="$PROJECT_DIR$/experiment_result/test_Gemma3-4b_fp16_output_result.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/experiment_result/test_Gemma3-4b_int8_output_result.csv" beforeDir="false" afterPath="$PROJECT_DIR$/experiment_result/test_Gemma3-4b_int8_output_result.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/experiment_result/test_Gemma3-4b_output_result.csv" beforeDir="false" afterPath="$PROJECT_DIR$/experiment_result/test_Gemma3-4b_output_result.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TrainingCode/train_gemma3_golf.py" beforeDir="false" afterPath="$PROJECT_DIR$/TrainingCode/finetune_gemma3_golf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/PoseVisualizer.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/PoseVisualizer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/Preprocess_Data_0513.py" beforeDir="false" afterPath="$PROJECT_DIR$/config/ds_config.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -79,28 +74,30 @@
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "git-widget-placeholder": "main",
     "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "D:/WorkSpace/2025_III_Golf_VLM_Distillation/dataset/0513_SFTDataset/mergedata",
+    "last_opened_file_path": "D:/WorkSpace/2025_III_Golf_VLM_Distillation",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
+    "settings.editor.selected.configurable": "configurable.group.language",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\WorkSpace\2025_III_Golf_VLM_Distillation" />
+      <recent name="D:\WorkSpace\2025_III_Golf_VLM_Distillation\config" />
       <recent name="D:\WorkSpace\2025_III_Golf_VLM_Distillation\dataset\0513_SFTDataset\mergedata" />
       <recent name="C:\Code\2025_III_golf_VLM_Distillation" />
       <recent name="C:\Code\TESTSSH" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\WorkSpace\2025_III_Golf_VLM_Distillation\config" />
       <recent name="D:\WorkSpace\2025_III_Golf_VLM_Distillation\TrainingCode" />
       <recent name="C:\Code\2025_III_golf_VLM_Distillation" />
       <recent name="C:\Code\2025_III_golf_VLM_Distillation\dataset\test_question" />
       <recent name="C:\Code\2025_III_golf_VLM_Distillation\dataset" />
-      <recent name="C:\Code\TESTSSH\experiment_result" />
     </key>
   </component>
   <component name="RunManager" selected="Python.run_training">
@@ -209,6 +206,10 @@
       <workItem from="1752065780391" duration="1201000" />
       <workItem from="1752219113702" duration="8292000" />
       <workItem from="1752400126346" duration="8873000" />
+      <workItem from="1753887113497" duration="16809000" />
+      <workItem from="1754390947684" duration="42596000" />
+      <workItem from="1755596248350" duration="21994000" />
+      <workItem from="1755773780784" duration="106609000" />
     </task>
     <task id="LOCAL-00001" summary=".">
       <option name="closed" value="true" />
@@ -240,8 +241,8 @@
     <option name="LAST_COMMIT_MESSAGE" value="." />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/2025_III_golf_VLM_Distillation$evaluate.coverage" NAME="evaluate Coverage Results" MODIFIED="1752927053846" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/TrainingCode" />
     <SUITE FILE_PATH="coverage/TESTSSH$main.coverage" NAME="main Coverage Results" MODIFIED="1743318949121" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/2025_III_golf_VLM_Distillation$run_training.coverage" NAME="run_training Coverage Results" MODIFIED="1752928496246" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/TrainingCode" />
+    <SUITE FILE_PATH="coverage/2025_III_golf_VLM_Distillation$run_training.coverage" NAME="run_training Coverage Results" MODIFIED="1756368374020" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/TrainingCode" />
+    <SUITE FILE_PATH="coverage/2025_III_golf_VLM_Distillation$evaluate.coverage" NAME="evaluate Coverage Results" MODIFIED="1752927053846" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/TrainingCode" />
   </component>
 </project>

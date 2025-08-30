@@ -1,0 +1,10 @@
+accelerate launch --config_file config/gemma3_accelerate_config_ds.yml  training_scripts.py
+cat > /home/lab02/.cache/huggingface/accelerate/default_config.yaml
+deepspeed --num_gpus=2 training_scripts.py \
+--deepspeed /config/ds_config.json
+
+python3 TrainingCode/run_training.py generate-distill-data --teacher_model_path model/merged_teacher_model --data_type mergedata
+
+python3 TrainingCode/run_training.py distill
+
+python3 TrainingCode/run_training.py merge-lora --base_model_id "google/gemma-3-4b-pt" --lora_adapter_path "model/gemma-3-4b-ptmergedata-2025_07_25_0235/checkpoint-2380"

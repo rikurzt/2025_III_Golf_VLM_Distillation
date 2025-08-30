@@ -1,268 +1,138 @@
-# 高爾夫球 VLM 訓練腳本
+# 高爾夫球 VLM 訓練/蒸餾腳本
 
-本目錄包含從 `FineTune_0513Golf_Data_Gemma3-4b.ipynb` 整理出來的訓練流程，已經模組化成獨立的 Python 腳本。
+本目錄提供高爾夫球影像-文字模型的微調、LoRA 合併、教師訊號生成與蒸餾訓練，以及評估的完整工具鏈。
 
-## 文件結構
+## 目錄結構
 
 ```
 TrainingCode/
-├── train_gemma3_golf.py    # 主要訓練類別
-├── config.py               # 配置文件
-├── run_training.py         # 執行腳本
-├── evaluate.py             # 模型評估腳本
-└── README.md              # 說明文件
+├── finetune_gemma3_golf.py      # 微調訓練器 (SFT)
+├── distill_gemma3_golf.py       # 蒸餾訓練器 (SFT + KD)
+├── distillation.py              # 蒸餾資料集/損失/Collator 工具
+├── generate_distill_data.py     # 用教師模型產生 teacher signals (CSV)
+├── merge_lora.py                # 合併 LoRA 適配器到基礎模型
+├── evaluate.py                  # 模型評估
+├── run_training.py              # 一鍵指令入口/子指令
+├── config.py                    # 集中設定 (分組 ft_* / ds_*)
+└── README.md                    # 本說明文件
 ```
 
-## 主要功能
+## 功能概覽
+- 微調 (SFT)：在 `finetune_gemma3_golf.py` 進行，參數使用 `ft_*` 分組。
+- LoRA 合併：`merge_lora.py` 將適配器權重合併為完整模型。
+- 教師訊號生成：`generate_distill_data.py` 從合併後教師模型導出 hidden/attn/image_hidden 到 CSV。
+- 蒸餾 (SFT+KD)：在 `distill_gemma3_golf.py` 進行，參數使用 `ds_*` 分組。
+- 評估：`evaluate.py` 對任一模型做推理並輸出 CSV 報告。
+- 一鍵流程：`run_training.py` 可依子指令分步執行，或不帶子指令直接跑全部階段。
 
-### 1. `train_gemma3_golf.py`
-主要的訓練器類別，包含：
-- `GolfDatasetTrainer` 類別：處理完整的訓練流程
-- 數據載入和預處理
-- 模型設置和配置
-- 訓練執行和模型保存
+## 快速開始
 
-### 2. `config.py`
-訓練配置管理：
-- `TrainingConfig` 類別：統一管理所有訓練參數
-- 支持三種數據類型：`textonly`、`hitdata` 和 `mergedata`
-- 包含模型、訓練、LoRA 等各種配置
-
-### 3. `evaluate.py`
-模型評估器類別，包含：
-- `GolfModelEvaluator` 類別：處理完整的評估流程
-- 載入已訓練的模型
-- 自動執行測試並生成 CSV 結果報告
-- 支援純文字和圖文對數據的評估
-
-### 4. `run_training.py`
-命令行執行腳本，支持參數自定義並包含自動評估功能
-
-## 使用方法
-
-### 方法一：直接使用訓練器
-
-```python
-from train_gemma3_golf import GolfDatasetTrainer
-
-# 使用默認配置
-trainer = GolfDatasetTrainer()
-output_dir = trainer.train()
-print(f"模型已保存至: {output_dir}")
-```
-
-### 方法二：使用自定義配置
-
-**方式A：直接修改 config.py 文件**
-```python
-# 在 config.py 中修改
-class TrainingConfig:
-    def __init__(self):
-        # ...
-        self.data_type = "mergedata"        # 修改數據類型
-        self.num_train_epochs = 10          # 修改訓練週期
-        self.learning_rate = 2e-5           # 修改學習率
-        self.eval_test_count = 10           # 修改評估樣本數量
-        # ...
-```
-
-**方式B：程式碼中動態修改配置**
-```python
-from train_gemma3_golf import GolfDatasetTrainer
-from config import TrainingConfig
-
-# 創建配置並修改參數
-config = TrainingConfig()
-config.data_type = "mergedata"
-config.num_train_epochs = 10
-config.learning_rate = 2e-5
-config.eval_test_count = 10
-
-# 使用自定義配置創建訓練器
-trainer = GolfDatasetTrainer()
-trainer.config = config
-output_dir = trainer.train()
-```
-
-### 方法三：命令行執行
-
+1) 安裝依賴
 ```bash
-# 使用 config.py 中的默認配置（包含自動評估）
-python run_training.py
-
-# 跳過自動評估
-python run_training.py --skip_evaluation
-
-# 查看可用參數
-python run_training.py --help
+pip install -r ../requirements.txt
 ```
 
-**注意**：所有訓練和評估參數都在 `config.py` 中設定，`run_training.py` 不接受命令行參數覆蓋。如需修改參數，請直接編輯 `config.py` 文件。
-
-### 方法四：獨立執行評估
-
+2) 設定資料路徑 (建議 Windows 直接以斜線寫法)
 ```bash
-# 評估已訓練的模型
-python evaluate.py --model_path model/gemma3-4b-sft-textonly-2025_01_15_1230
-
-# 自定義評估參數
-python evaluate.py \
-    --model_path model/gemma3-4b-sft-textonly-2025_01_15_1230 \
-    --test_count 10 \
-    --random_select \
-    --output_dir my_evaluation_results
-
-# 查看評估腳本的所有參數
-python evaluate.py --help
+# 範例：在 CLI 覆寫到專案根目錄
+python3 run_training.py --file_locate "D:/WorkSpace/2025_III_Golf_VLM_Distillation/" --data_type mergedata
 ```
 
-### 方法五：程式碼中使用評估器
-
-```python
-from evaluate import GolfModelEvaluator
-from config import TrainingConfig
-
-# 創建評估器
-config = TrainingConfig()
-config.data_type = "textonly"  # 根據您的數據類型設定
-evaluator = GolfModelEvaluator(config=config)
-
-# 載入模型並評估
-evaluator.load_model("model/gemma3-4b-sft-textonly-2025_01_15_1230")
-results = evaluator.evaluate_model(
-    test_count=5,
-    save_csv=True,
-    output_dir="experiment_result",
-    random_select=False
-)
-
-# 清理記憶體
-evaluator.cleanup()
+3) 一鍵跑完整流程 (微調 → 合併LoRA → 生成教師訊號 → 蒸餾 → 評估)
+```bash
+python3 run_training.py --file_locate "D:/WorkSpace/2025_III_Golf_VLM_Distillation/" --data_type mergedata
 ```
 
-## 配置參數說明
+## 子指令與用法
 
-### 數據配置
-- `data_type`: 數據類型
-  - `textonly`: 純文字問答數據
-  - `hitdata`: 圖文對數據
-  - `mergedata`: 合併的圖文對與文字數據
-- `file_locate`: 數據文件根目錄路徑
+`run_training.py` 支援以下子指令；所有 `config.py` 內欄位都可用 CLI 覆寫（包含布林 `--flag/--no-flag`）。
 
-### 訓練配置
-- `num_train_epochs`: 訓練週期數 (默認: 15)
-- `per_device_train_batch_size`: 批次大小 (默認: 1)
-- `learning_rate`: 學習率 (默認: 1e-5)
-- `gradient_accumulation_steps`: 梯度累積步數 (默認: 4)
+- 微調
+```bash
+python3 run_training.py finetune \
+  --file_locate "D:/WorkSpace/2025_III_Golf_VLM_Distillation/" \
+  --data_type mergedata \
+  --ft_model_id google/gemma-3-4b-pt --ft_processor_id google/gemma-3-4b-it \
+  --ft_torch_dtype bfloat16 --ft_attn_implementation eager --ft_device_map auto \
+  --ft_use_4bit --ft_learning_rate 2e-4 --ft_num_train_epochs 5 \
+  --ft_per_device_train_batch_size 1 --ft_gradient_accumulation_steps 4
+# 訓練完成後自動評估，如需跳過：
+python3 run_training.py finetune --skip_evaluation
+```
 
-### LoRA 配置
-- `lora_r`: LoRA rank (默認: 16)
-- `lora_alpha`: LoRA alpha (默認: 16)
-- `lora_dropout`: LoRA dropout (默認: 0.05)
+- 合併 LoRA
+```bash
+python3 run_training.py merge-lora \
+  --lora_adapter_path path/to/lora/checkpoint \
+  --base_model_id google/gemma-3-4b-pt \
+  --lora_merge_max_shard_size 5GB
+```
 
-### 監控配置
-- `wandb_project`: Wandb 專案名稱
-- `use_wandb`: 是否使用 wandb (默認: True)
+- 生成教師訊號 (teacher signals)
+```bash
+python3 run_training.py generate-distill-data \
+  --teacher_model_path model/merged_teacher_model \
+  --processor_id google/gemma-3-4b-it \
+  --file_locate "D:/WorkSpace/2025_III_Golf_VLM_Distillation/" \
+  --data_type mergedata
+```
 
-### 評估配置
-- `eval_test_count`: 評估測試樣本數量 (默認: 5)
-- `eval_random_select`: 隨機選擇評估樣本 (默認: False, 即使用前N筆)
-- `eval_output_dir`: 評估結果輸出目錄 (默認: "experiment_result")
-- `max_new_tokens`: 模型生成最大token數 (默認: 512)
-- `top_p`: Top-p 採樣參數 (默認: 0.95)
-- `temperature`: 採樣溫度 (默認: 0.7)
+- 蒸餾
+```bash
+python3 run_training.py distill \
+  --file_locate "D:/WorkSpace/2025_III_Golf_VLM_Distillation/" \
+  --data_type mergedata \
+  --teacher_model_path model/merged_teacher_model \
+  --ds_student_model_id google/gemma-3-4b-pt --ds_processor_id google/gemma-3-4b-it \
+  --ds_torch_dtype bfloat16 --ds_attn_implementation eager --ds_device_map auto \
+  --no-ds_use_4bit --ds_learning_rate 1e-4 --ds_num_train_epochs 3 \
+  --distill_loss_weight 0.6
+# 訓練完成後自動評估，如需跳過：
+python3 run_training.py distill --skip_evaluation
+```
 
-**注意**：`skip_evaluation` 是唯一可以通過命令行控制的參數，用於跳過訓練後的自動評估階段。
+- 評估
+```bash
+python3 run_training.py evaluate --model_path path/to/model_dir \
+  --file_locate "D:/WorkSpace/2025_III_Golf_VLM_Distillation/" \
+  --data_type mergedata \
+  --eval_test_count 10 --eval_output_dir experiment_result --eval_random_select
+```
+
+- 查看所有可覆寫欄位
+```bash
+python3 run_training.py --help | cat
+```
+
+## 設定說明（關鍵）
+
+- 分組：預設即分開，微調讀 `ft_*`，蒸餾讀 `ds_*`，互不影響。
+- 常用共通欄位：
+  - `file_locate`：專案/資料根目錄（例如 `D:/WorkSpace/2025_III_Golf_VLM_Distillation/`）
+  - `data_type`：`textonly` | `hitdata` | `mergedata`
+  - `lora_alpha`, `lora_dropout`, `lora_r`, `lora_merge_max_shard_size`
+  - `teacher_model_path`, `distill_loss_weight`, `distill_dataset_locate`, `merged_model_path`
+- 微調 (ft_*，預設值見 `config.py`)
+  - 模型載入：`ft_model_id`, `ft_processor_id`, `ft_torch_dtype`, `ft_attn_implementation`, `ft_device_map`, `ft_use_4bit`, `ft_bnb_4bit_*`
+  - SFT：`ft_num_train_epochs`, `ft_per_device_train_batch_size`, `ft_gradient_accumulation_steps`, `ft_learning_rate`, `ft_max_grad_norm`, `ft_warmup_ratio`, `ft_lr_scheduler_type`, `ft_gradient_checkpointing`, `ft_gradient_checkpointing_use_reentrant`, `ft_optim`, `ft_save_strategy`, `ft_logging_steps`
+- 蒸餾 (ds_*，預設值見 `config.py`)
+  - 學生模型載入：`ds_student_model_id`, `ds_processor_id`, `ds_torch_dtype`, `ds_attn_implementation`, `ds_device_map`, `ds_use_4bit`, `ds_bnb_4bit_*`
+  - SFT (蒸餾訓練)：`ds_num_train_epochs`, `ds_per_device_train_batch_size`, `ds_gradient_accumulation_steps`, `ds_learning_rate`, `ds_max_grad_norm`, `ds_warmup_ratio`, `ds_lr_scheduler_type`, `ds_gradient_checkpointing`, `ds_gradient_checkpointing_use_reentrant`, `ds_optim`, `ds_save_strategy`, `ds_logging_steps`
+
+所有欄位皆可於 `config.py` 直接修改，或在命令列以 `--欄位名 值` 覆寫。
 
 ## 數據路徑
-
-腳本會自動根據 `data_type` 載入對應的數據：
-
+依 `data_type` 自動載入：
 - `textonly`: `dataset/0513_SFTDataset/text/qa_pairs_sft.json`
 - `hitdata`: `dataset/0513_SFTDataset/hitdata/sft_training_data.json`
 - `mergedata`: `dataset/0513_SFTDataset/mergedata/merged_dataset.json`
 
 ## 輸出
-
-### 訓練輸出
-訓練完成後，模型會保存在 `model/` 目錄下，文件名格式為：
-```
-model/{exp_name}{timestamp}/
-```
-
-### 評估輸出
-評估完成後，結果會保存為 CSV 文件，包含以下欄位：
-
-| 欄位名稱 | 說明 |
-|---------|------|
-| `sample_index` | 測試樣本在數據集中的索引 |
-| `test_order` | 測試順序 |
-| `data_type` | 數據類型（純文字/多模態） |
-| `question` | 輸入問題 |
-| `model_response` | 模型生成的回答 |
-| `ground_truth` | 標準答案 |
-| `evaluation_status` | 評估狀態（SUCCESS/ERROR） |
-| `error_message` | 錯誤訊息（如有） |
-| `response_length` | 模型回答長度 |
-| `ground_truth_length` | 標準答案長度 |
-| `evaluation_time` | 評估時間 |
-
-CSV 文件會保存在指定的輸出目錄中，文件名格式為：
-```
-model_evaluation_result_{timestamp}.csv
-```
+- 訓練輸出：`model/{exp_name}{timestamp}/`
+- 評估輸出：`experiment_result/model_evaluation_result_{timestamp}.csv`
 
 ## 注意事項
-
-1. 確保 GPU 支持 bfloat16
-2. 確保有足夠的 GPU 記憶體
-3. 如果使用 `hitdata` 或 `mergedata` 類型，會自動處理 base64 圖片轉換
-4. 訓練過程中會自動清理記憶體
-5. 需要先登入 wandb (如果啟用的話)
-6. 訓練完成後默認會自動執行評估，可以使用 `--skip_evaluation` 跳過
-7. 評估階段會重新載入模型，需要確保有足夠記憶體
-8. 評估結果會自動保存為 CSV 文件，便於後續分析
-
-## 依賴項
-
-```
-torch
-transformers
-trl
-peft
-wandb
-pillow
-pandas
-numpy
-base64
-json
-random
-datetime
-```
-
-確保已安裝所有必要的依賴項。
-
-## 快速開始
-
-1. **安裝依賴項**：
-   ```bash
-   pip install torch transformers trl peft wandb pillow pandas numpy
-   ```
-
-2. **設定參數**：
-   編輯 `config.py` 文件來設定您的訓練參數：
-   ```python
-   # 在 config.py 中修改參數
-   self.data_type = "textonly"          # 數據類型
-   self.num_train_epochs = 5            # 訓練週期
-   self.file_locate = "您的數據路徑/"    # 數據根目錄
-   self.eval_test_count = 5             # 評估樣本數量
-   ```
-
-3. **執行訓練和評估**：
-   ```bash
-   python run_training.py
-   ```
-
-4. **查看評估結果**：
-   訓練完成後會在 `experiment_result/` 目錄下生成 CSV 評估報告 
+- 建議使用支援 bfloat16 的 GPU；如需 4-bit，請保持 `*_use_4bit` 為開啟並確認環境支援 bitsandbytes。
+- `generate-distill-data` 需先有合併後的教師模型 (`merge-lora`)；產生的 CSV 預設放於 `dataset/distill_teacher_signals.csv`。
+- Windows 使用者建議 `file_locate` 採用斜線路徑，例如：`D:/WorkSpace/2025_III_Golf_VLM_Distillation/`。
+- `run_training.py` 不帶子指令時，會依序執行：微調 → LoRA 合併 → 更新教師模型路徑 → 生成蒸餾資料 → 蒸餾 → 評估。 

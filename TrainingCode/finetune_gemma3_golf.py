@@ -13,89 +13,26 @@ import base64
 from datetime import datetime
 from io import BytesIO
 from PIL import Image
-
 from transformers import AutoProcessor, AutoModelForImageTextToText, BitsAndBytesConfig
 from trl import SFTConfig, SFTTrainer
 from peft import LoraConfig
-
+from config import TrainingConfig
 
 class GolfDatasetTrainer:
-    def __init__(self, config_file=None):
-        """初始化訓練器
-        
-        Args:
-            config_file: 配置文件路徑，如果為None則使用默認配置
-        """
-        if config_file and os.path.exists(config_file):
-            from config import TrainingConfig
-            self.config = TrainingConfig()
-        else:
-            # 使用默認配置
-            self.config = self._get_default_config()
-        
+    def __init__(self, config: TrainingConfig):
+        """初始化訓練器"""
+        self.config = config
         self.model = None
         self.processor = None
         self.trainer = None
         self.dataset = None
     
-    def _get_default_config(self):
-        """獲取默認配置"""
-        class DefaultConfig:
-            # 實驗配置
-            exp_name = "gemma3-4b-sft-textonly-"
-            file_locate = "/tmp/pycharm_project_979/"  # 遠端環境，根據部署地做更改
-            
-            # 數據配置
-            data_type = "textonly"  # textonly 或 hitdata 或 mergedata
-            
-            # 模型配置
-            model_id = "google/gemma-3-4b-pt"
-            processor_id = "google/gemma-3-4b-it"
-            
-            # 訓練配置
-            num_train_epochs = 15
-            per_device_train_batch_size = 1
-            gradient_accumulation_steps = 4
-            learning_rate = 1e-5
-            
-            # LoRA配置
-            lora_alpha = 16
-            lora_dropout = 0.05
-            lora_r = 16
-            
-            # 圖片處理配置
-            image_scale_percent = 20
-            image_quality = 50
-            
-            # 其他配置
-            torch_dtype = "bfloat16"
-            attn_implementation = "eager"
-            device_map = "auto"
-            max_grad_norm = 0.3
-            warmup_ratio = 0.03
-            lr_scheduler_type = "constant"
-            logging_steps = 1
-            use_wandb = True
-            
-            # Wandb配置
-            wandb_project = "III-2025-golf"
-            
-            def get_data_path(self):
-                """根據數據類型獲取數據路徑"""
-                if self.data_type == "textonly":
-                    return f"{self.file_locate}dataset/0513_SFTDataset/text/qa_pairs_sft.json"
-                elif self.data_type == "hitdata":
-                    return f"{self.file_locate}dataset/0513_SFTDataset/hitdata/sft_training_data.json"
-                elif self.data_type == "mergedata":
-                    return f"{self.file_locate}dataset/0513_SFTDataset/mergedata/merged_dataset.json"
-                else:
-                    raise ValueError(f"未知的數據類型: {self.data_type}")
-            
-        return DefaultConfig()
-    
     def _get_data_path(self):
         """根據數據類型獲取數據路徑"""
         return self.config.get_data_path()
+
+    def _val(self, ft_value, common_value):
+        return ft_value if ft_value is not None else common_value
     
     def base64_to_pil(self, base64_str: str) -> Image.Image:
         """將 base64 字串轉為 PIL Image"""
@@ -274,39 +211,45 @@ class GolfDatasetTrainer:
     def setup_model(self):
         """設置模型和處理器"""
         print("設置模型...")
-        print(f"使用配置: attn_implementation={self.config.attn_implementation}, torch_dtype={self.config.torch_dtype}")
+        attn_impl = self._val(self.config.ft_attn_implementation, self.config.attn_implementation)
+        torch_dtype_cfg = self._val(self.config.ft_torch_dtype, self.config.torch_dtype)
+        print(f"使用配置: attn_implementation={attn_impl}, torch_dtype={torch_dtype_cfg}")
         
         # Check if GPU benefits from bfloat16
         if torch.cuda.get_device_capability()[0] < 8:
             raise ValueError("GPU does not support bfloat16, please use a GPU that supports bfloat16.")
 
         # 從配置中讀取 torch_dtype
-        if self.config.torch_dtype == "bfloat16":
+        if torch_dtype_cfg == "bfloat16":
             torch_dtype = torch.bfloat16
-        elif self.config.torch_dtype == "float16":
+        elif torch_dtype_cfg == "float16":
             torch_dtype = torch.float16
         else:
             torch_dtype = torch.bfloat16  # 默認值
 
         # Define model init arguments (從配置中讀取)
         model_kwargs = dict(
-            attn_implementation=self.config.attn_implementation,  # 從配置讀取
-            torch_dtype=torch_dtype,  # 從配置讀取
-            device_map=self.config.device_map,  # 從配置讀取
+            attn_implementation=attn_impl,
+            torch_dtype=torch_dtype,
+            device_map=self._val(self.config.ft_device_map, self.config.device_map),
         )
 
-        # BitsAndBytesConfig int-4 config
-        model_kwargs["quantization_config"] = BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_use_double_quant=True,
-            bnb_4bit_quant_type="nf4",
-            bnb_4bit_compute_dtype=model_kwargs["torch_dtype"],
-            bnb_4bit_quant_storage=model_kwargs["torch_dtype"],
-        )
+        # BitsAndBytesConfig int-4 config (可由 config 控制)
+        use_4bit = self._val(self.config.ft_use_4bit, self.config.use_4bit)
+        if use_4bit:
+            model_kwargs["quantization_config"] = BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_use_double_quant=self._val(self.config.ft_bnb_4bit_use_double_quant, self.config.bnb_4bit_use_double_quant),
+                bnb_4bit_quant_type=self._val(self.config.ft_bnb_4bit_quant_type, self.config.bnb_4bit_quant_type),
+                bnb_4bit_compute_dtype=torch_dtype,
+                bnb_4bit_quant_storage=torch_dtype,
+            )
 
         # Load model and tokenizer (從配置讀取)
-        self.model = AutoModelForImageTextToText.from_pretrained(self.config.model_id, **model_kwargs)
-        self.processor = AutoProcessor.from_pretrained(self.config.processor_id, use_fast=True)
+        model_id = self._val(self.config.ft_model_id, self.config.model_id)
+        processor_id = self._val(self.config.ft_processor_id, self.config.processor_id)
+        self.model = AutoModelForImageTextToText.from_pretrained(model_id, **model_kwargs)
+        self.processor = AutoProcessor.from_pretrained(processor_id, use_fast=True)
         
         print("模型設置完成")
         return self.model, self.processor
@@ -316,27 +259,27 @@ class GolfDatasetTrainer:
         time = datetime.now().strftime("%Y_%m_%d_%H%M")
         
         args = SFTConfig(
-            output_dir=f"{self.config.file_locate}/model/{self.config.exp_name}{time}",     # directory to save and repository id
-            num_train_epochs=self.config.num_train_epochs,                         # number of training epochs (從配置讀取)
-            per_device_train_batch_size=self.config.per_device_train_batch_size,              # batch size per device during training (從配置讀取)
-            gradient_accumulation_steps=self.config.gradient_accumulation_steps,              # number of steps before performing a backward/update pass (從配置讀取)
-            gradient_checkpointing=True,                # use gradient checkpointing to save memory
-            optim="adamw_torch_fused",                  # use fused adamw optimizer
-            logging_steps=self.config.logging_steps,                            # log every 5 steps (從配置讀取)
+            output_dir=f"{self.config.file_locate}/model/{self.config.exp_name}{time}",
+            num_train_epochs=self._val(self.config.ft_num_train_epochs, self.config.num_train_epochs),
+            per_device_train_batch_size=self._val(self.config.ft_per_device_train_batch_size, self.config.per_device_train_batch_size),
+            gradient_accumulation_steps=self._val(self.config.ft_gradient_accumulation_steps, self.config.gradient_accumulation_steps),
+            gradient_checkpointing=self._val(self.config.ft_gradient_checkpointing, self.config.gradient_checkpointing),
+            optim=self._val(self.config.ft_optim, self.config.optim),
+            logging_steps=self._val(self.config.ft_logging_steps, self.config.logging_steps),
             logging_dir="logs",
-            save_strategy="epoch",                      # save checkpoint every epoch
-            learning_rate=self.config.learning_rate,                         # learning rate, based on QLoRA paper (從配置讀取)
-            bf16=True,                                  # use bfloat16 precision
-            max_grad_norm=self.config.max_grad_norm,                          # max gradient norm based on QLoRA paper (從配置讀取)
-            warmup_ratio=self.config.warmup_ratio,                          # warmup ratio based on QLoRA paper (從配置讀取)
-            lr_scheduler_type=self.config.lr_scheduler_type,               # use constant learning rate scheduler (從配置讀取)
-            push_to_hub=False,                           # push model to hub
-            report_to="wandb" if self.config.use_wandb else "none",                    
+            save_strategy=self._val(self.config.ft_save_strategy, self.config.save_strategy),
+            learning_rate=self._val(self.config.ft_learning_rate, self.config.learning_rate),
+            bf16=(self._val(self.config.ft_torch_dtype, self.config.torch_dtype) == "bfloat16"),
+            max_grad_norm=self._val(self.config.ft_max_grad_norm, self.config.max_grad_norm),
+            warmup_ratio=self._val(self.config.ft_warmup_ratio, self.config.warmup_ratio),
+            lr_scheduler_type=self._val(self.config.ft_lr_scheduler_type, self.config.lr_scheduler_type),
+            push_to_hub=False,
+            report_to="wandb" if self.config.use_wandb else "none",
             gradient_checkpointing_kwargs={
-                "use_reentrant": False
-            },  # use reentrant checkpointing
-            dataset_text_field="",                      # need a dummy field for collator
-            dataset_kwargs={"skip_prepare_dataset": True},  # important for collator
+                "use_reentrant": self._val(self.config.ft_gradient_checkpointing_use_reentrant, self.config.gradient_checkpointing_use_reentrant)
+            },
+            dataset_text_field="",
+            dataset_kwargs={"skip_prepare_dataset": True},
             run_name=self.config.exp_name + time,
         )
         args.remove_unused_columns = False  # important for collator
@@ -410,7 +353,7 @@ class GolfDatasetTrainer:
 def main():
     """主函數"""
     # 創建訓練器實例
-    trainer = GolfDatasetTrainer()
+    trainer = GolfDatasetTrainer(TrainingConfig())
     
     # 執行訓練
     output_dir = trainer.train()

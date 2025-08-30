@@ -10,3 +10,6 @@ experiment_result/test_pose_estimate_3/
 model/gemma3-4b-sft-textonly-2025_06_20_0842/
 
 .idea/
+/model/gemma-3-4b-ptmergedata-2025_07_25_0235/
+/model/gemma-test/
+/model/merged_teacher_model/
