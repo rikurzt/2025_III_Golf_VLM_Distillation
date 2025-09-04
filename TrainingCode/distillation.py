@@ -5,6 +5,7 @@ import torch
 import pandas as pd
 from PIL import Image
 from overrides import overrides
+import os
 
 from torch.nn import MSELoss
 from torch.utils.data import Dataset
@@ -43,23 +44,55 @@ def deserialize_tensor_list(b64str):
     return tensors
 
 
-class CSVTeacherSignalsDataset(Dataset):
-    def __init__(self, csv_path: str, raw_dataset):
-        self.df = pd.read_csv(csv_path, compression="infer")
+class TeacherSignalsDataset(Dataset):
+    """從 .pt 檔案目錄中讀取教師訊號的資料集。"""
+    def __init__(self, signals_dir_path: str, raw_dataset):
+        self.signals_dir_path = signals_dir_path
         self.raw_dataset = raw_dataset
-        assert self.df["id"].max() < len(raw_dataset), "CSV ids exceed raw dataset length"
+
+        if not os.path.isdir(self.signals_dir_path):
+            raise FileNotFoundError(f"指定的訊號目錄不存在: {self.signals_dir_path}")
+
+        # 獲取所有以數字命名的子目錄並排序
+        self.sample_dirs = sorted(
+            [d for d in os.listdir(signals_dir_path) if os.path.isdir(os.path.join(signals_dir_path, d)) and d.isdigit()],
+            key=lambda x: int(x)
+        )
+        
+        num_signals = len(self.sample_dirs)
+        num_raw = len(raw_dataset)
+
+        if num_signals > num_raw:
+             print(f"警告：訊號目錄數量 ({num_signals}) 大於原始資料集大小 ({num_raw})。")
+        elif num_signals < num_raw:
+             print(f"警告：訊號目錄數量 ({num_signals}) 小於原始資料集大小 ({num_raw})，將只使用可用的訊號。")
 
     def __len__(self):
-        return len(self.df)
+        return len(self.sample_dirs)
 
     def __getitem__(self, idx):
-        row = self.df.iloc[idx]
-        raw = self.raw_dataset[int(row["id"])]
+        # 目錄名稱即為原始資料集的索引
+        sample_dir_name = self.sample_dirs[idx]
+        raw_idx = int(sample_dir_name)
+        
+        sample_dir_path = os.path.join(self.signals_dir_path, sample_dir_name)
+        
+        def load_signal(filename):
+            """安全地載入 .pt 檔案，若不存在則返回 None。"""
+            path = os.path.join(sample_dir_path, filename)
+            if os.path.exists(path):
+                # 載入到 CPU 以避免在資料處理階段佔用 GPU
+                return torch.load(path, map_location='cpu')
+            return None
+
+        # 獲取原始資料
+        raw = self.raw_dataset[raw_idx]
+
         return {
             "messages": raw["messages"],
-            "teacher_hidden_states": deserialize_tensor_list(row.get("teacher_hidden_states_b64", "")),
-            "teacher_attentions": deserialize_tensor_list(row.get("teacher_attentions_b64", "")),
-            "teacher_image_hidden_states": deserialize_tensor_list(row.get("teacher_image_hidden_states_b64", "")),
+            "teacher_hidden_states": load_signal("teacher_hidden_states.pt"),
+            "teacher_attentions": load_signal("teacher_attentions.pt"),
+            "teacher_image_hidden_states": load_signal("teacher_image_hidden_states.pt"),
         }
 
 

@@ -15,7 +15,7 @@ import gc
 from config import TrainingConfig
 # 匯入微調腳本中的數據處理邏輯
 from finetune_gemma3_golf import GolfDatasetTrainer
-from distillation import serialize_tensor_list, to_tensor_list
+from distillation import to_tensor_list
 
 def pin_and_to_device(batch, device):
     """將 CPU 張量 pin 住並以 non_blocking 搬移到指定裝置。"""
@@ -68,16 +68,12 @@ def generate_distill_data(args):
 
     # 準備輸出檔案（逐筆寫入避免累積記憶體）
     output_dir = args.output_dir
-    output_path = os.path.join(output_dir, args.output_filename)
     os.makedirs(output_dir, exist_ok=True)
-    if os.path.exists(output_path):
-        os.remove(output_path)
-
-    # 同步寫檔：初始化表頭寫入旗標
-    header_written = False
+    
+    print(f"蒸餾訊號將逐筆儲存於目錄：{output_dir}")
 
     # 3. 生成 Teacher Signals
-    print("正在逐筆生成並保存 teacher signals 到 CSV...")
+    print("正在逐筆生成並保存 teacher signals 到 .pt 檔案...")
     count = 0
     for idx, sample in enumerate(tqdm(dataset, desc="處理樣本中")):
         
@@ -103,26 +99,27 @@ def generate_distill_data(args):
         attn_list_cpu = [t.detach().to("cpu") for t in to_tensor_list(getattr(out, "attentions", None))]
         img_hs_list_cpu = [t.detach().to("cpu") for t in to_tensor_list(getattr(out, "image_hidden_states", None))]
 
-        # 同步：立刻序列化並寫入一列，保證順序與 idx 一致
-        row = {
-            "id": idx,
-            "teacher_hidden_states_b64": serialize_tensor_list(hs_list_cpu),
-            "teacher_attentions_b64": serialize_tensor_list(attn_list_cpu),
-            "teacher_image_hidden_states_b64": serialize_tensor_list(img_hs_list_cpu),
-        }
-        row_df = pd.DataFrame([row])
-        row_df.to_csv(output_path, mode="a", header=(not header_written), index=False)
-        header_written = True
+        # 為當前樣本建立子目錄
+        sample_output_dir = os.path.join(output_dir, str(idx))
+        os.makedirs(sample_output_dir, exist_ok=True)
+
+        # 將每個張量列表儲存到獨立的 .pt 檔案
+        if hs_list_cpu:
+            torch.save(hs_list_cpu, os.path.join(sample_output_dir, "teacher_hidden_states.pt"))
+        if attn_list_cpu:
+            torch.save(attn_list_cpu, os.path.join(sample_output_dir, "teacher_attentions.pt"))
+        if img_hs_list_cpu:
+            torch.save(img_hs_list_cpu, os.path.join(sample_output_dir, "teacher_image_hidden_states.pt"))
 
         # 釋放 GPU/CPU 資源
-        del out, inputs, inputs_cpu, hs_list_cpu, attn_list_cpu, img_hs_list_cpu, row_df, row
+        del out, inputs, inputs_cpu, hs_list_cpu, attn_list_cpu, img_hs_list_cpu
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
         gc.collect()
         count += 1
 
     # 4. 完成訊息
-    print(f"已保存 {count} 筆資料到 {output_path}")
+    print(f"已保存 {count} 筆資料到 {output_dir}")
 
 def main():
     parser = argparse.ArgumentParser(description="為模型蒸餾生成 Teacher Signals")
@@ -130,11 +127,8 @@ def main():
     parser.add_argument("--processor_path", type=str, default="google/gemma-3-4b-it", help="模型對應的 processor 路徑")
     parser.add_argument("--data_type", type=str, choices=["textonly", "hitdata", "mergedata"], required=True, help="要處理的數據集類型")
     parser.add_argument("--file_locate", type=str, default="./", help="專案根目錄路徑")
-    parser.add_argument("--output_dir", type=str, default="dataset", help="輸出 CSV 檔案的目錄")
-    parser.add_argument("--output_filename", type=str, default="distill_teacher_signals.csv", help="輸出 CSV 檔案的名稱")
-    # 兼容舊參數，但已不使用（保持為 no-op）
-    parser.add_argument("--writer_batch_size", type=int, default=1, help="已停用：同步模式不使用批次寫入")
-    
+    parser.add_argument("--output_dir", type=str, default="dataset/distill_teacher_signals", help="輸出 pt 檔案的目錄")
+
     args = parser.parse_args()
     generate_distill_data(args)
 

@@ -19,7 +19,7 @@ from config import TrainingConfig
 from finetune_gemma3_golf import GolfDatasetTrainer
 from distillation import (
     DistillSTFTrainer, 
-    CSVTeacherSignalsDataset, 
+    TeacherSignalsDataset, 
     create_distill_data_collator,
 )
 
@@ -105,9 +105,9 @@ class GolfDistillationTrainer(GolfDatasetTrainer):
         raw_dataset_handler = GolfDatasetTrainer(self.config)
         raw_dataset = raw_dataset_handler.load_dataset()
         
-        distill_data_path = self.config.get_distill_data_path()
-        distill_dataset = CSVTeacherSignalsDataset(distill_data_path, raw_dataset)
-        print(f"從 {distill_data_path} 載入 {len(distill_dataset)} 筆蒻餾資料。")
+        distill_data_path = self.config.distill_dataset_locate
+        distill_dataset = TeacherSignalsDataset(distill_data_path, raw_dataset)
+        print(f"從 {distill_data_path} 載入 {len(distill_dataset)} 筆蒸餾資料。")
 
         
         # 2. 設置學生模型和處理器

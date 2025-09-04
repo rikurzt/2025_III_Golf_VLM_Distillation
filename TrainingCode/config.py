@@ -13,7 +13,7 @@ class TrainingConfig:
     def __init__(self):
         # 實驗配置
 
-        self.file_locate = "/tmp/pycharm_project_640/"  # 遠端環境，根據部署地做更改
+        self.file_locate = "/tmp/pycharm_project_682/"  # 遠端環境，根據部署地做更改
         
         # 數據配置
         self.data_type = "mergedata"
@@ -34,10 +34,10 @@ class TrainingConfig:
         self.ft_bnb_4bit_use_double_quant = True
         self.ft_bnb_4bit_quant_type = "nf4"
         # SFT
-        self.ft_num_train_epochs = 5
+        self.ft_num_train_epochs = 10
         self.ft_per_device_train_batch_size = 1
         self.ft_gradient_accumulation_steps = 4
-        self.ft_learning_rate = 2e-4
+        self.ft_learning_rate = 1e-5
         self.ft_max_grad_norm = 0.3
         self.ft_warmup_ratio = 0.03
         self.ft_lr_scheduler_type = "constant"
@@ -59,10 +59,10 @@ class TrainingConfig:
         self.ds_bnb_4bit_use_double_quant = True
         self.ds_bnb_4bit_quant_type = "nf4"
         # SFT
-        self.ds_num_train_epochs = 3
+        self.ds_num_train_epochs = 10
         self.ds_per_device_train_batch_size = 1
         self.ds_gradient_accumulation_steps = 4
-        self.ds_learning_rate = 1e-4
+        self.ds_learning_rate = 1e-5
         self.ds_max_grad_norm = 0.3
         self.ds_warmup_ratio = 0.03
         self.ds_lr_scheduler_type = "constant"
@@ -86,7 +86,7 @@ class TrainingConfig:
 
         # 蒸餾資料/教師與合併
         self.teacher_model_path = self.model_id
-        self.distill_dataset_locate = "distill_teacher_signals.csv"
+        self.distill_dataset_locate = "dataset/distill_teacher_signals"
         self.distill_loss_weight = 0.5
         self.merged_model_path = "model/merged_teacher_model"
         self.lora_alpha = 16
@@ -113,8 +113,6 @@ class TrainingConfig:
         else:
             raise ValueError(f"未知的數據類型: {self.data_type}")
 
-    def get_distill_data_path(self):
-        return os.path.join(self.file_locate, "dataset", self.distill_dataset_locate)
 
     def print_config(self):
         print("=" * 50)

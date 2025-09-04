@@ -7,4 +7,4 @@ python3 TrainingCode/run_training.py generate-distill-data --teacher_model_path 
 
 python3 TrainingCode/run_training.py distill
 
-python3 TrainingCode/run_training.py merge-lora --base_model_id "google/gemma-3-4b-pt" --lora_adapter_path "model/gemma-3-4b-ptmergedata-2025_07_25_0235/checkpoint-2380"
+python3 TrainingCode/run_training.py merge-lora --base_model_id "google/gemma-3-27b-pt" --lora_adapter_path "model/google/gemma-3-27b-ptmergedata-2025_09_03_0924/checkpoint-2380"

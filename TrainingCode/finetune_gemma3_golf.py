@@ -211,8 +211,8 @@ class GolfDatasetTrainer:
     def setup_model(self):
         """設置模型和處理器"""
         print("設置模型...")
-        attn_impl = self._val(self.config.ft_attn_implementation, self.config.attn_implementation)
-        torch_dtype_cfg = self._val(self.config.ft_torch_dtype, self.config.torch_dtype)
+        attn_impl = self._val(self.config.ft_attn_implementation, self.config.ft_attn_implementation)
+        torch_dtype_cfg = self._val(self.config.ft_torch_dtype, self.config.ft_torch_dtype)
         print(f"使用配置: attn_implementation={attn_impl}, torch_dtype={torch_dtype_cfg}")
         
         # Check if GPU benefits from bfloat16
@@ -231,16 +231,16 @@ class GolfDatasetTrainer:
         model_kwargs = dict(
             attn_implementation=attn_impl,
             torch_dtype=torch_dtype,
-            device_map=self._val(self.config.ft_device_map, self.config.device_map),
+            device_map=self._val(self.config.ft_device_map, self.config.ft_device_map),
         )
 
         # BitsAndBytesConfig int-4 config (可由 config 控制)
-        use_4bit = self._val(self.config.ft_use_4bit, self.config.use_4bit)
+        use_4bit = self._val(self.config.ft_use_4bit, self.config.ft_use_4bit)
         if use_4bit:
             model_kwargs["quantization_config"] = BitsAndBytesConfig(
                 load_in_4bit=True,
-                bnb_4bit_use_double_quant=self._val(self.config.ft_bnb_4bit_use_double_quant, self.config.bnb_4bit_use_double_quant),
-                bnb_4bit_quant_type=self._val(self.config.ft_bnb_4bit_quant_type, self.config.bnb_4bit_quant_type),
+                bnb_4bit_use_double_quant=self._val(self.config.ft_bnb_4bit_use_double_quant, self.config.ft_bnb_4bit_use_double_quant),
+                bnb_4bit_quant_type=self._val(self.config.ft_bnb_4bit_quant_type, self.config.ft_bnb_4bit_quant_type),
                 bnb_4bit_compute_dtype=torch_dtype,
                 bnb_4bit_quant_storage=torch_dtype,
             )
@@ -260,23 +260,23 @@ class GolfDatasetTrainer:
         
         args = SFTConfig(
             output_dir=f"{self.config.file_locate}/model/{self.config.exp_name}{time}",
-            num_train_epochs=self._val(self.config.ft_num_train_epochs, self.config.num_train_epochs),
-            per_device_train_batch_size=self._val(self.config.ft_per_device_train_batch_size, self.config.per_device_train_batch_size),
-            gradient_accumulation_steps=self._val(self.config.ft_gradient_accumulation_steps, self.config.gradient_accumulation_steps),
-            gradient_checkpointing=self._val(self.config.ft_gradient_checkpointing, self.config.gradient_checkpointing),
-            optim=self._val(self.config.ft_optim, self.config.optim),
-            logging_steps=self._val(self.config.ft_logging_steps, self.config.logging_steps),
+            num_train_epochs=self._val(self.config.ft_num_train_epochs, self.config.ft_num_train_epochs),
+            per_device_train_batch_size=self._val(self.config.ft_per_device_train_batch_size, self.config.ft_per_device_train_batch_size),
+            gradient_accumulation_steps=self._val(self.config.ft_gradient_accumulation_steps, self.config.ft_gradient_accumulation_steps),
+            gradient_checkpointing=self._val(self.config.ft_gradient_checkpointing, self.config.ft_gradient_checkpointing),
+            optim=self._val(self.config.ft_optim, self.config.ft_optim),
+            logging_steps=self._val(self.config.ft_logging_steps, self.config.ft_logging_steps),
             logging_dir="logs",
-            save_strategy=self._val(self.config.ft_save_strategy, self.config.save_strategy),
-            learning_rate=self._val(self.config.ft_learning_rate, self.config.learning_rate),
-            bf16=(self._val(self.config.ft_torch_dtype, self.config.torch_dtype) == "bfloat16"),
-            max_grad_norm=self._val(self.config.ft_max_grad_norm, self.config.max_grad_norm),
-            warmup_ratio=self._val(self.config.ft_warmup_ratio, self.config.warmup_ratio),
-            lr_scheduler_type=self._val(self.config.ft_lr_scheduler_type, self.config.lr_scheduler_type),
+            save_strategy=self._val(self.config.ft_save_strategy, self.config.ft_save_strategy),
+            learning_rate=self._val(self.config.ft_learning_rate, self.config.ft_learning_rate),
+            bf16=(self._val(self.config.ft_torch_dtype, self.config.ft_torch_dtype) == "bfloat16"),
+            max_grad_norm=self._val(self.config.ft_max_grad_norm, self.config.ft_max_grad_norm),
+            warmup_ratio=self._val(self.config.ft_warmup_ratio, self.config.ft_warmup_ratio),
+            lr_scheduler_type=self._val(self.config.ft_lr_scheduler_type, self.config.ft_lr_scheduler_type),
             push_to_hub=False,
             report_to="wandb" if self.config.use_wandb else "none",
             gradient_checkpointing_kwargs={
-                "use_reentrant": self._val(self.config.ft_gradient_checkpointing_use_reentrant, self.config.gradient_checkpointing_use_reentrant)
+                "use_reentrant": self._val(self.config.ft_gradient_checkpointing_use_reentrant, self.config.ft_gradient_checkpointing_use_reentrant)
             },
             dataset_text_field="",
             dataset_kwargs={"skip_prepare_dataset": True},

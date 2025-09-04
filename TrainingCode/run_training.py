@@ -46,13 +46,12 @@ def run_generate_distill_data(config: TrainingConfig):
         processor_path=config.processor_id,
         data_type=config.data_type,
         file_locate=config.file_locate,
-        output_dir=f"{config.file_locate}dataset",
-        output_filename=config.distill_dataset_locate,
+        output_dir=config.distill_dataset_locate,
         writer_batch_size=getattr(config, "writer_batch_size", 1),
         writer_queue_maxsize=getattr(config, "writer_queue_maxsize", 2)
     )
     generate_distill_data(args)
-    print(f"--- 蒸餾數據生成完成，已保存至: {config.get_distill_data_path()} ---")
+    print(f"--- 蒸餾數據生成完成，已保存至: {config.distill_dataset_locate} ---")
 
 def run_distill(config: TrainingConfig):
     """執行蒸餾訓練流程"""
