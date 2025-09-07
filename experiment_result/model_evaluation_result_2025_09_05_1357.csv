@@ -1,0 +1,479 @@
+﻿sample_index,test_order,data_type,question,model_response,ground_truth,evaluation_status,error_message,response_length,ground_truth_length,evaluation_time
+346,1,純文字,請解釋一下為什麼在高爾夫揮桿中，長桿需要較早完成回正動作？,"()有 was at and（(
+ is in in'
+ by =v“- 在<strong> and is at of
+ andi and  = ( “
+'. and and
+ to
+
+l by =   in<strong>, on(v  and
+
+    and     has and(is( A( to  to and of I/ and for to as 
+/d and for （ and  (  ( and<b> is or and and for "" for 
+ -f (的 in [ and in ( “d ' (I can toD to
+ was.
+
+ (/ in and -   to for and of ，的s  =o
+
+h. (  forf  was   and (
+
+
+
+ have on的  and ( (  and
+
+ has on on andm  
+和 inI has =  ( as.  was（ can
+
+is，[ for和n as- ( to, ands are (' has to and with
+
+
+ of/
+ in,  
+
+ is和
+
+ ( of
+
+m、 is as \ is by to<strong>ms和. = and that/ "" not can ( ( to   has  has
+
+ is
+ to ( =[ -   for as in (
+ in and - with' and in over isf "".
+
+在D
+
+,s as<strong>x ( of.  or  \ has，  in( ( in that and by   in at- and(
+
+ is at to   (（ is “is “和
+ ( and by<b> or “    (D
+
+( as,( or to has/ hasand at  bys and的 and( (-/( in “ on &  的. with or   at的 or
+
+d    on to/
+s' I withh = is fromf and is in from and with  ( have 
+
+ and and  l( ( - in
+
+k in isk andor ands
+ 
+
+ 的（ of  的A as
+， on的- isis asf 
+ 
+
+ ( (和 ( = 
+ inm ""/d and  on (
+有 is/s and to 的h in in andv and（is> ofi ,（*d and的"" is and andd  to
+
+  and for - by",因為長桿（如1號木桿）桿頭走的半徑較大，回正的時間較長。如果延遲回正，可能會影響擊球的方向和距離。為了確保球的方向正確，長桿在揮桿過程中需要在雙手下到腰部時就完成回正動作，這樣才能在釋放和擊球時保持桿面正確，達到理想的擊球效果。,SUCCESS,,1101,114,2025-09-05 13:56:55
+693,2,多模態 (圖片+文字),"與教練的姿勢差異: {'A': [0.002, -0.001, 0.001, -0.0, -0.001, -0.0], 'T': [-0.038, -0.031, 0.227, -0.082, -0.056, -0.016], 'I': [0.015, -0.007, -0.001, 0.002, -0.007, -0.001], 'F': [0.001, 0.01, -0.0, -0.025, -0.029, 0.036]}, 擊球數據: 球速: 58.7, 發射角度: 22.6, 發射方向: -4.9, 飛行距離: 149.9, ClubAngleFace: -8.7, ClubAnglePath: -1.1"," and to as  on in are T orr
+
+,是, for can
+ =  
+ to in and to in  and-   isd ,
+
+ is in 
+ in和  andv and not 
+
+不in at in and in<b>x on/ I (，
+ in，D that to to, T in - in (
+ in for and II &,d.isf or(,'  =d is
+ and for ands
+( \ with in in  and'   have for in of of from
+
+ in
+
+ can fork as/ and to andl,
+
+ on has
+ has have to ’
+ isis，, have
+，  is and' onis,/ in ( was to 
+. at  haveh 和
+
+ by of' in to is- on and  ( has  ( to’的Tk  ， for  to on,S and , tois (d has. ats in  with on -/-在 I  \   v ，- or-
+
+ in and
+
+
+和“，  
+
+ and的//
+
+不/ A is not m A( haveesd,, to to  isd are<strong> 
+ iny to onl, with is  is’ is in和 or not andd to  has and<strong>; in and in cane
+
+
+ to’/
+D T to that<b> m","{""球路"": ""Pull Hook左拉左曲球"",
+ ""原因"": ""從圖片觀察，學員在P4上桿頂點時明顯超出粉紅色輔助線，桿頭位置過高，且橙色揮桿角度偏陡，搭配數據中ClubAngleFace為-8.7（桿面關閉）、ClubAnglePath為-1.1（由外往內），Clubface差值為7.6，顯示球在左飛的基礎上還會左曲。姿勢差異數據中，T階段手腕差異達0.227，表示手腕過度彎曲，肩膀與髖部也有明顯負值，顯示上桿過於陡峭且旋轉不足。"",
+ ""建議"": ""目前你的上桿在P4頂點時，桿頭位置過高，這會讓你在下桿時容易從外側切入，導致球往左飛甚至左曲。我希望你在練習時，專注在上桿初期（P2~P3）讓肩膀自然往右轉，而不是只靠手臂抬起球桿。你可以想像背後有一張椅子，肩膀要轉到碰到椅背的感覺，這樣能幫助你建立更平穩的上桿路徑。同時注意手腕不要過度翻轉，保持左手腕穩定，避免在頂點時過度彎曲。這樣做能讓你在下桿時更容易維持正確的揮桿路徑，減少由外往內的切球動作，進而修正左拉左曲的球路。""}",SUCCESS,,676,445,2025-09-05 13:57:02
+525,3,多模態 (圖片+文字),請問此擊球動作位於高爾夫球中P1準備姿勢(A)、P4 上桿頂點(T)、P6 下桿(I)、P7 擊球(F)哪個階段？,"
+
+  at and (, and are II with in的[
+ in  f.是  
+在
+ and and' and of andA and<strong>
+
+l ( is and andd and and with in( is at by  in in，
+ has and and of'
+
+ in/   (’v that
+
+r at  in
+.，[ (
+ is（ / and  and andf has
+
+， at<strong> at) =e  ((, and的“ and’
+ and (
+
+
+在 的/ in (I F",這個動作屬於P1準備姿勢(A)。,SUCCESS,,266,16,2025-09-05 13:57:07
+510,4,多模態 (圖片+文字),請分析這張高爾夫球動作圖片並檢測姿勢錯誤：," and and (and are’I to in’  to<strong> and
+  It at and（和 with/  and at or，s to","根據圖片中的輔助框線與擊球者的姿勢分析，以下是姿勢上的錯誤判斷：
+
+1. **頭部超出軸線**：擊球者的頭部明顯偏離身體中心軸線（橘色斜線所示），這可能導致揮桿時重心不穩，影響擊球準確性與穩定性。
+
+2. **上半身過度傾斜**：上半身向右側（對於右撇子來說）過度傾斜，導致脊椎角度與下半身不一致，這會影響揮桿軌道與力量傳導。
+
+3. **右手臂位置過高**：右手臂抬得過高，超出理想的揮桿平面，這可能導致揮桿路徑過陡，影響擊球的穩定性與準確度。
+
+整體來看，這個姿勢可能會導致揮桿過程中重心轉移不順暢，並增加擊球失誤的風險。建議調整頭部與上半身位置，保持在身體軸線內，並控制手臂在正確的揮桿平面上。",SUCCESS,,78,300,2025-09-05 13:57:09
+478,5,多模態 (圖片+文字),請分析這張高爾夫球動作圖片並檢測姿勢錯誤：," is orv at at
+
+  ( with “"" and","從這張高爾夫球動作圖片來看，這位擊球者處於準備擊球的站姿階段。根據圖中姿勢與標準高爾夫站姿相比，以下是幾個可能的姿勢錯誤與建議：
+
+1. **手臂過度伸直且僵硬**：
+   - 擊球者的右臂（靠近身體的一側）看起來幾乎完全伸直，這可能會導致揮桿時缺乏流暢性與控制力。理想情況下，雙臂應自然下垂，略微彎曲，保持放鬆。
+
+2. **肩膀過度前傾**：
+   - 擊球者的上半身似乎有些過度前傾，導致背部略呈弓形。正確的姿勢應該是從臀部自然向前傾，保持背部挺直，這樣才能在揮桿過程中保持穩定的軸心。
+
+3. **頭部過度低垂**：
+   - 擊球者的頭部位置過低，可能會限制肩膀轉動的幅度，影響揮桿的完整性。應保持下巴略抬，讓肩膀能自由轉動。
+
+4. **腳部站位略窄**：
+   - 擊球者的雙腳站距略窄，這可能會影響平衡與穩定性。根據使用的球桿類型（如鐵桿或木桿），腳的站距應適度調整，一般建議與肩同寬或略寬。
+
+5. **重心偏向腳尖**：
+   - 從姿勢來看，重心似乎偏向前腳掌，這會導致揮桿時容易失去平衡。理想的重心應該分布在腳掌中央，讓身體保持穩定。
+
+總結建議：
+- 放鬆雙臂，讓手臂自然下垂。
+- 從臀部前傾，保持背部挺直。
+- 抬高下巴，讓肩膀能自由轉動。
+- 調整站距至與肩同寬或略寬。
+- 重心放在腳掌中間，避免前傾。
+
+這些調整將有助於提升擊球穩定性與揮桿效率。",SUCCESS,,30,591,2025-09-05 13:57:10
+577,6,純文字,請解釋高爾夫揮桿動作中左手臂與桿身的相對關係。," ofl or /i)'
+ ( with “（
+
+r "" ofn andd and to   in and[  andT1 was and are(，[l/ as，
+
+， = has to andd  （\... =h
+ and can.
+不(d ' .  fors在\、
+
+f,m, with and
+( (/ A， and(是
+
+y and and and andi 
+ for in，
+cd
+
+ as 的 for  ( andl II in (
+
+  and = I I to不  have for and的dis not, ( and 
+
+ by and or.的isv  - in =d
+ I  for   can (   as不d， for, and and
+
+ in， =l =  or, willl with
+在 forn  for was
+ =的/在.的T and
+ ，，.<strong>n and( I or withA
+ on in and,， at that
+
+in in from/ ( to = 
+
+的“v with  A<b>( ( 
+  in ( on for
+
+ to  and in (   and(""is ( of or (<strong>
+
+ with A hasn and
+
+  / as  and
+  ， ( is
+
+iss
+v to has A is in not over at withy ( in to and with<b>. in l的I ( (不or to 
+ as
+/   at ink and to on to， and of in and    ，(
+ is
+
+f(
+h
+/ A at isy is andI   on have 
+n
+
+d and ( to ""[f>
+ is和 and or D(1s for ( andy 
+y in/ for in 
+
+ for
+ ，[**和or to on   -
+
+ in  of
+' and from   ors at on to in and;
+in ( = \o andT T in to
+ toI in
+不  is to  ’ in is overf to not
+s/'( 的/, from<strong> - and， or to的 “( in from（- as ( or
+
+  
+
+ts on
+v<strong>:“in for was as “ 
+ and，
+
+l in- in as by and by at( at to with for",在高爾夫揮桿中，左手臂與桿身的相對關係在不同階段有所變化：瞄球時，左手臂與桿身幾乎成一直線；起桿時，桿身先動，與左手臂的夾角逐漸增大，形成曲腕效果；下桿時，左手臂與桿身保持一定角度，並逐漸釋放，最後在觸球後，桿身超前左手臂，完成整個揮桿動作。,SUCCESS,,1084,121,2025-09-05 13:57:10
+222,7,多模態 (圖片+文字),"與教練的姿勢差異: {'A': [0.26, -0.077, -0.01, -0.082, -0.062, -0.02], 'T': [0.004, -0.001, 0.001, -0.002, -0.002, -0.0], 'I': [0.004, -0.001, 0.001, -0.001, -0.001, -0.0], 'F': [-0.0, 0.001, 0.01, -0.005, -0.007, 0.0]}","（ as in cano andD
+ by at (  can
+.<strong>f   in is with  and at  and over of  
+
+
+. of ( has for and<b> in’I<strong>r d
+
+
+
+I ( with in ( in(
+(""
+
+
+ for have to with
+
+的 as S ( in on is and has in I as
+ for to ( ofs<strong>l and have in  (/ / in, at and in or as from的, will  in to   
+
+ that has haveo and- as h for is from and（- and-.
+
+ was inhf and atI 在 with  fromv in， for for and in in in at on -  in is[ has  of/（r for - and in or not with and  = “ have and  I 
+
+isdn、 on不和 aredI and in   has
+ 
+（<[ and
+
+( as in 
+D  
+is, for and ( orx   的 ( has as  is   in can that over and and “g，s的 ( ( are ofn to  on . 
+
+
+m[ not and andI     in  are
+
+
+ in not<b> inI 
+,l and  v， ofd' to andi andI “ (
+
+   on  and and for and = not in “
+
+I. can with in and<b> on“ =, is is to has<strong> and
+ ( can and “ for on to[I T/ and  T in l 
+
+ on or  to (( and to,isI F
+
+.
+ for
+
+ have
+I (  in can witht<strong>
+  的在/ or ((  for in as的( I in and)d和 at I to in  A
+(>- and( “ in, has by and was( and and I[ to    =d（[ and at  andI as, to are onS as is和   are and and for
+ (  asv on
+
+v的l   to are  的/ (m by A are was from I not to  ( and
+
+o in
+
+yf A to can at in onm to and
+ have can and toD in(
+
+   is in in  
+
+y","{""球路"": ""Pull Hook左拉左曲球"",
+ ""原因"": ""從圖片觀察，學員在P4上桿頂點時，桿頭位置明顯過高，超出橙色揮桿夾角線，顯示上桿角度過於陡峭，這與數據中A階段肩膀偏差0.26的正值相符，表示肩膀轉動不足，導致桿面過於垂直。P6下桿時桿身仍偏離理想路徑，顯示下桿角度過陡，可能伴隨手腕過度彎曲與由內向外的路徑，符合Pull Hook的典型特徵。"",
+ ""建議"": ""我們來調整一下你的上桿動作，特別是在P2到P4的過程中。你現在的問題是上桿太陡，肩膀轉得不夠，導致桿頭在頂點時過高，這會讓你下桿時路徑太內側，容易打出左拉左曲的球。我希望你在上桿時，感覺像是右肩往後轉多一點，就像你要把右肩塞進背後口袋一樣，這樣可以幫助你把桿面帶到正確的位置。下桿時，記得讓左手臂保持筆直，左手腕不要過度彎曲，讓身體自然帶動手臂下來，而不是用手去拉桿，這樣擊球時桿面才不會關閉，球才會直飛。""}",SUCCESS,,1188,396,2025-09-05 13:57:17
+251,8,純文字,如果球一直偏向右側飛行，可能的揮桿問題有哪些？,"s
+ hasy ( is to 
+
+   
+h   and l
+有， of.d and for
+ and in  is、 was of
+
+    at.的的sl and
+
+
+
+ 
+
+ has/ hasA
+
+
+
+ ( in in  at<b> on and to. to  (v  Ih in “ 
+
+
+(v at.,，"" as， ( andl
+ ( -<strong>
+ at，> AI,( is and to / as or is( with， are and (is as  I and at的l> and  and by( T在er1
+ on' on or[ for  （<strong> with of was( is are
+ on “/ and的是 I “ and"" with has的*不t<strong>的的v onm and is ( in ( is（ and orc  Disat
+ has[- and，  with and from and/
+
+不  for in =
+ for or sI. at  with AI with A to, atv
+  at is in to和< 的n（ is  is  
+
+ on
+ = to are from to to<b>p 
+ and at is have<strong>
+(
+，  or不' on
+ inx和， or/
+'( for withA T of（ I(>.)  ( and'- ( ( in( of、 =有,'、(  and
+
+at (
+
+ and( on- have(k =
+
+d[(m / “( with
+ (and—的 tot的i<strong> and in' ，c =I (是t in havek( "" canis in ork and should  (， at
+
+ inx的， “    is.的. (
+ in   as,,
+ = to/ in on are at  
+
+u 
+ hasf (  as的 ’s是 and of  = on of  (
+
+d in -[ isis on
+和，和<code>d
+
+i  is by A[, in   "" = "" (
+
+I “ (and for
+ and (<strong>
+
+ = andor and  can and
+
+  is is和S1 can and
+，， have  have onA(' A and  can
+
+
+v and =( is not
+
+ or' hass（“ with can is 
+
+",如果球一直偏向右側飛行，可能的原因包括揮桿軌道由內向外推（in-side-out）或桿面呈打開（Open）。這表示揮桿軌道不正確，桿面未能保持方正，導致球偏離目標的右側。這種情況通常需要調整揮桿軌道或桿面角度來改善。,SUCCESS,,1073,108,2025-09-05 13:57:25
+183,9,純文字,如果在高爾夫揮桿中提前用力加速向下揮桿，會產生哪些影響？,"，
+ (
+ 和 or to in that is.v for不 to on   is/ in,d、<strong>f that (和 has and， by and  and by = have with在（<strong>[ of at ofh for on not(s =_  
+  of i to at with by cand "" for in的 hasc  
+
+/ and— and to in at as and
+ and in[
+
+ havek  has is in，
+<strong>
+
+（ ( with “ ( or( to by and at and at to m in
+
+
+ (is to and and of and  to of to  fromy is的 has (
+ to and with在和 as or to和. （: ( and and as-is -  (.，
+in/ T andds isd to ( 的<strong>y A/ was  is   to is   hasy “ 
+h
+is hasy "" (  in  ",提前用力加速向下揮桿會導致重心轉移偏離、揮桿節奏不流暢，並可能改變揮桿軌道，造成不良的擊球效果。此外，這樣的動作會影響擊球的穩定性與準確性，可能導致球飛行方向偏差或距離不足，因為未能充分利用離心力釋放來產生最大力量。,SUCCESS,,481,108,2025-09-05 13:57:33
+578,10,純文字,"與教練的姿勢差異: {'A': [0.003, 0.0, 0.001, -0.003, -0.002, 0.001], 'T': [-0.0, 0.004, -0.001, -0.001, -0.002, 0.001], 'I': [-0.0, -0.0, 0.001, 0.0, -0.0, 0.0], 'F': [-0.001, 0.001, 0.001, -0.027, -0.027, 0.047]}, 擊球數據: 球速: 121.5, 發射角度: 9.0, 發射方向: -8.8, 飛行距離: 149.9, ClubAngleFace: -13.0, ClubAnglePath: -5.9","   
+，和( ( I  or is  for of of，
+
+(，[A   has and<strong>/ for orm to 
+
+
+
+is
+
+, 的 of的的 for to with  on   and and,I. at in and to (d  have andA， and to can to and has and tolt. 
+
+ in and for with  andh or 
+
+不 and
+
+
+
+  to  d和
+ or ，Td and/ in 
+
+at.   ， has的  of in over’ is
+
+t to and.
+in  (
+ to( has to  to 
+
+   and[ can
+
+ in with   is for  can iss，
+
+的[。
+
+ to  of is overh  is 
+和' in  
+
+m andAI F (/ "" has to is orh for have and I and
+,, was
+l，， (
+，., and ( 
+T  和 and'
+
+
+ and ( from ( and, /
+ = and at and,的 (. in  on的<strong>t hass Din， ( bys I of at'
+
+“m “l in T and and-
+is和inn,  to and for is
+[。
+ and I and to at
+
+
+ ( is and for
+
+ is over or  with[ inl to ofI
+
+(是  ( I in 
+ has
+
+x[  with = for（l D I (和h and is 
+ on
+ I andl  ; D在 on  and is
+ ( "" andS (v was at  ( from not， inm to and has to的 
+
+, ( as and are on I,
+  （( in  in ( "" in，-, and（ is or
+
+- in for has to on 
+和 at in and and（A,
+(
+
+ and notd ( to to and  (  ，  is ""的(. canre and (S) and
+[
+ of from in A in to as- ， at
+ can to  and to to  in to and (
+
+
+(不) bys of  T   to  by  in has
+ on A, has andI I is to (  is  in withis and (
+in'( wass","{""球路"": ""Pull Hook 左拉左曲球"",
+ ""原因"": ""擊球數據顯示發射方向為-8.8（左側），ClubAngleFace為-13.0，ClubAnglePath為-5.9，代表揮桿路徑向左，且桿面更向左（更關閉），造成球從左側出發並向左旋轉，形成左拉左曲球（Pull Hook）。姿勢數據中，在擊球階段（P7）髖部與膝蓋明顯向左偏移（-0.027），腳踝偏移更大（0.047），顯示下半身提前旋轉並失去穩定，導致桿面關閉與過度由內向外的揮桿路徑。"",
+ ""建議"": ""從擊球時的動作來看，你的下半身有點太早轉動，尤其是髖部和膝蓋在擊球時偏移太多，這會讓你的上半身來不及跟上，導致桿面關閉、球往左飛又左轉。建議你在下桿時，先讓左手臂保持穩定打直，左手腕維持固定，不要急著轉動下半身，讓身體自然地從上到下協調轉動。你可以試著在練習時感覺左腳穩穩踩住地面，直到球桿快接近球時再轉動髖部，這樣可以幫助你控制桿面角度，避免球往左拉又左轉。""}",SUCCESS,,1097,423,2025-09-05 13:57:36

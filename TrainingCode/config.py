@@ -19,8 +19,8 @@ class TrainingConfig:
         self.data_type = "mergedata"
 
         # 共用基礎（資料與命名）
-        self.model_id = "google/gemma-3-27b-pt"
-        self.processor_id = "google/gemma-3-27b-it"
+        self.model_id = "google/gemma-3-12b-pt"
+        self.processor_id = "google/gemma-3-12b-it"
         self.exp_name = self.model_id + self.data_type + "-"
 
         # —— 微調分組 (ft_*) 預設 ——
@@ -28,7 +28,7 @@ class TrainingConfig:
         self.ft_model_id = self.model_id
         self.ft_processor_id = self.processor_id
         self.ft_torch_dtype = "bfloat16"
-        self.ft_attn_implementation = "eager"
+        self.ft_attn_implementation = "flash_attention_2"
         self.ft_device_map = "auto"
         self.ft_use_4bit = True
         self.ft_bnb_4bit_use_double_quant = True
@@ -53,9 +53,9 @@ class TrainingConfig:
         self.ds_student_model_id = "google/gemma-3-4b-pt"
         self.ds_processor_id = "google/gemma-3-4b-it"
         self.ds_torch_dtype = "bfloat16"
-        self.ds_attn_implementation = "eager"
+        self.ds_attn_implementation = "flash_attention_2"
         self.ds_device_map = "auto"
-        self.ds_use_4bit = True
+        self.ds_use_4bit = False
         self.ds_bnb_4bit_use_double_quant = True
         self.ds_bnb_4bit_quant_type = "nf4"
         # SFT
@@ -72,6 +72,12 @@ class TrainingConfig:
         self.ds_save_strategy = "epoch"
         self.ds_logging_steps = 1
 
+        # 蒸餾損失計算開關
+        self.ds_do_hidden_states_loss = True
+        self.ds_do_attentions_loss = False
+        self.ds_do_image_hidden_states_loss = False
+        self.ds_hidden_states_last_only = False
+
         # 其他共用
         self.use_wandb = True
         self.wandb_project = "III-2025-golf"
@@ -83,11 +89,13 @@ class TrainingConfig:
         self.eval_test_count = 5
         self.eval_random_select = False
         self.eval_output_dir = "experiment_result"
+        self.eval_device_map = "auto"
+        self.eval_attn_implementation = "flash_attention_2"
 
         # 蒸餾資料/教師與合併
         self.teacher_model_path = self.model_id
         self.distill_dataset_locate = "dataset/distill_teacher_signals"
-        self.distill_loss_weight = 0.5
+        self.distill_rate = 0.000001#0.000001 if  ds_hidden_states_last_only = false
         self.merged_model_path = "model/merged_teacher_model"
         self.lora_alpha = 16
         self.lora_dropout = 0.05
@@ -128,7 +136,8 @@ class TrainingConfig:
         print(f"    optim: {self.ft_optim} | save: {self.ft_save_strategy} | gckpt: {self.ft_gradient_checkpointing}(reent={self.ft_gradient_checkpointing_use_reentrant}) | log_steps: {self.ft_logging_steps}")
         # 蒸餾
         print("  [Distill]")
-        print(f"    student: {self.ds_student_model_id} | processor: {self.ds_processor_id} | teacher: {self.teacher_model_path} | kd_w: {self.distill_loss_weight}")
+        print(f"    student: {self.ds_student_model_id} | processor: {self.ds_processor_id} | teacher: {self.teacher_model_path}  | kd_rate: {self.distill_rate}")
+        print(f"    loss switches: hidden={self.ds_do_hidden_states_loss}, attn={self.ds_do_attentions_loss}, img_hidden={self.ds_do_image_hidden_states_loss}, hs_last_only={self.ds_hidden_states_last_only}")
         print(f"    dtype: {self.ds_torch_dtype} | attn: {self.ds_attn_implementation} | device: {self.ds_device_map} | 4bit: {self.ds_use_4bit}")
         print(f"    epochs: {self.ds_num_train_epochs} | bs: {self.ds_per_device_train_batch_size} | grad_acc: {self.ds_gradient_accumulation_steps}")
         print(f"    lr: {self.ds_learning_rate} | max_grad_norm: {self.ds_max_grad_norm} | warmup: {self.ds_warmup_ratio} | sched: {self.ds_lr_scheduler_type}")

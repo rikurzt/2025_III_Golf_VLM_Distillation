@@ -281,6 +281,7 @@ class GolfDatasetTrainer:
             dataset_text_field="",
             dataset_kwargs={"skip_prepare_dataset": True},
             run_name=self.config.exp_name + time,
+            save_safetensors=False,
         )
         args.remove_unused_columns = False  # important for collator
         

@@ -138,10 +138,6 @@ def main():
             print(f"--- 更新設定: 教師模型路徑設定為 {merged_model_path} ---")
             config.teacher_model_path = merged_model_path
 
-            # 4. 生成蒸餾資料
-            run_generate_distill_data(config)
-            print(f"\n--- 蒸餾資料生成階段完成 ---")
-
             # 5. 執行蒸餾
             distilled_lora_path = run_distill(config)
             print(f"\n--- 蒸餾階段完成 ---")

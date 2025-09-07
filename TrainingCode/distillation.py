@@ -6,7 +6,8 @@ import pandas as pd
 from PIL import Image
 from overrides import overrides
 import os
-
+import gzip
+import torch.nn.functional as F
 from torch.nn import MSELoss
 from torch.utils.data import Dataset
 from torch.nn.utils.rnn import pad_sequence
@@ -17,83 +18,31 @@ if is_wandb_available():
     import wandb
 
 
+class StudentModelWithProjector(torch.nn.Module):
+    def __init__(self, model, projector):
+        super().__init__()
+        self.model = model
+        self.projector = projector
+
+    def forward(self, *args, **kwargs):
+        return self.model(*args, **kwargs)
+
+    def __getattr__(self, name: str):
+        """Forward attribute access to the wrapped model."""
+        try:
+            return super().__getattr__(name)
+        except AttributeError:
+            if hasattr(self.model, name):
+                return getattr(self.model, name)
+            raise
+
+
 def to_tensor_list(x):
     if x is None:
         return []
     if isinstance(x, (list, tuple)):
         return list(x)
     return [x]
-
-def serialize_tensor_list(tensors) -> str:
-    if not tensors:
-        return ""
-    buf = io.BytesIO()
-    arrays = {f"arr_{i}": (t.squeeze(0).to(torch.float16).cpu().numpy() if isinstance(t, torch.Tensor) else np.array(t))
-              for i, t in enumerate(tensors)}
-    np.savez_compressed(buf, **arrays)
-    return base64.b64encode(buf.getvalue()).decode("ascii")
-
-def deserialize_tensor_list(b64str):
-    if not isinstance(b64str, str) or b64str == "":
-        return None
-    data = base64.b64decode(b64str.encode("ascii"))
-    buf = io.BytesIO(data)
-    with np.load(buf, allow_pickle=False) as npz:
-        keys = sorted(npz.files, key=lambda k: int(k.split("_")[1]))
-        tensors = [torch.from_numpy(npz[k]).to(torch.float32) for k in keys]
-    return tensors
-
-
-class TeacherSignalsDataset(Dataset):
-    """從 .pt 檔案目錄中讀取教師訊號的資料集。"""
-    def __init__(self, signals_dir_path: str, raw_dataset):
-        self.signals_dir_path = signals_dir_path
-        self.raw_dataset = raw_dataset
-
-        if not os.path.isdir(self.signals_dir_path):
-            raise FileNotFoundError(f"指定的訊號目錄不存在: {self.signals_dir_path}")
-
-        # 獲取所有以數字命名的子目錄並排序
-        self.sample_dirs = sorted(
-            [d for d in os.listdir(signals_dir_path) if os.path.isdir(os.path.join(signals_dir_path, d)) and d.isdigit()],
-            key=lambda x: int(x)
-        )
-        
-        num_signals = len(self.sample_dirs)
-        num_raw = len(raw_dataset)
-
-        if num_signals > num_raw:
-             print(f"警告：訊號目錄數量 ({num_signals}) 大於原始資料集大小 ({num_raw})。")
-        elif num_signals < num_raw:
-             print(f"警告：訊號目錄數量 ({num_signals}) 小於原始資料集大小 ({num_raw})，將只使用可用的訊號。")
-
-    def __len__(self):
-        return len(self.sample_dirs)
-
-    def __getitem__(self, idx):
-        # 目錄名稱即為原始資料集的索引
-        sample_dir_name = self.sample_dirs[idx]
-        raw_idx = int(sample_dir_name)
-        
-        sample_dir_path = os.path.join(self.signals_dir_path, sample_dir_name)
-        
-        def load_signal(filename):
-            """安全地載入 .pt 檔案，若不存在則返回 None。"""
-            path = os.path.join(sample_dir_path, filename)
-            if os.path.exists(path):
-                # 載入到 CPU 以避免在資料處理階段佔用 GPU
-                return torch.load(path, map_location='cpu')
-            return None
-
-        # 獲取原始資料
-        raw = self.raw_dataset[raw_idx]
-
-        return {
-            "messages": raw["messages"],
-            "teacher_hidden_states": load_signal("teacher_hidden_states.pt"),
-            "teacher_attentions": load_signal("teacher_attentions.pt"),
-            "teacher_image_hidden_states": load_signal("teacher_image_hidden_states.pt"),
-        }
 
 
 def get_cor_teacher(teacher_reps, student_reps, is_attn=False):
@@ -148,21 +97,25 @@ def get_kd_loss(student_reps, teacher_reps, loss_fn, is_attn=False, is_img=False
             '''
             student_att = torch.where(student_att <= -1e2, torch.zeros_like(student_att), student_att)
             teacher_att = torch.where(teacher_att <= -1e2, torch.zeros_like(teacher_att), teacher_att)
-            kd_loss += loss_fn(student_att, teacher_att)
+            if teacher_att.dim() == student_att.dim() + 1 and teacher_att.shape[1] == 1:
+                teacher_att = teacher_att.squeeze(1)
+            kd_loss += loss_fn(student_att, teacher_att.to(student_att.dtype))
             #print("att")
             #print(student_att.shape,teacher_att.shape)
     elif is_img:
         for student_rep, teacher_rep in zip(student_reps, teacher_reps):
-            teacher_rep = teacher_rep[0]
+            # teacher_rep = teacher_rep[0] # This is likely incorrect for batch_size > 1
             '''
             if student_rep.shape[1] != teacher_rep.shape[1]:
                 min_len = min(student_rep.shape[1], teacher_rep.shape[1])
                 student_rep = student_rep[:, :min_len]
                 teacher_rep = teacher_rep[:, :min_len]
             '''
+            if teacher_rep.dim() == student_rep.dim() + 1 and teacher_rep.shape[1] == 1:
+                teacher_rep = teacher_rep.squeeze(1)
             #print("is_img")
             #print(student_rep.shape,teacher_rep.shape)
-            kd_loss += loss_fn(student_rep, teacher_rep)
+            kd_loss += loss_fn(student_rep, teacher_rep.to(student_rep.dtype))
     else: # for hidden states
         for student_rep, teacher_rep in zip(student_reps, teacher_reps):
             '''
@@ -171,24 +124,85 @@ def get_kd_loss(student_reps, teacher_reps, loss_fn, is_attn=False, is_img=False
                 student_rep = student_rep[:, :min_len]
                 teacher_rep = teacher_rep[:, :min_len]
             '''
+            if teacher_rep.dim() == student_rep.dim() + 1 and teacher_rep.shape[1] == 1:
+                teacher_rep = teacher_rep.squeeze(1)
+
             #print("hidden states")
             #print(student_rep.shape,teacher_rep.shape)
-            kd_loss += loss_fn(student_rep, teacher_rep)
+            kd_loss += loss_fn(student_rep, teacher_rep.to(student_rep.dtype))
 
     return kd_loss
 
 class DistillSTFTrainer(SFTTrainer):
-    def __init__(self, *args, **kwargs):
-        self.distill_weight = kwargs.pop('distill_weight', 1.0)
+    def __init__(self, *args, teacher_model=None,
+                 do_hidden_states_loss=True, do_attentions_loss=True, do_image_hidden_states_loss=True,
+                 distill_rate=1.0, hidden_states_last_only=False,
+                 **kwargs):
         super().__init__(*args, **kwargs)
+        self.distill_rate = distill_rate
+        self.teacher_model = teacher_model
 
-    def compute_hidden_states_loss(self, student_hidden_states, teacher_hidden_states,loss_fn):
-        if teacher_hidden_states is None:
+        if self.teacher_model is not None:
+            self.teacher_model.eval()
+
+        self.do_hidden_states_loss = do_hidden_states_loss
+        self.do_attentions_loss = do_attentions_loss
+        self.do_image_hidden_states_loss = do_image_hidden_states_loss
+        self.hidden_states_last_only = hidden_states_last_only
+
+    def compute_hidden_states_loss(self, student_hidden_states, teacher_hidden_states):
+        """
+        助教模型的隱藏狀態經過投影後，與學生模型的隱藏狀態進行對齊和LOSS計算，採用 MSE Loss全層平均。
+        """
+        if teacher_hidden_states is None or student_hidden_states is None:
             return 0.0
-        # Align teacher and student hidden states
-        teacher_hidden_states = get_cor_teacher(teacher_hidden_states, student_hidden_states, is_attn=False)
-        return get_kd_loss(student_hidden_states, teacher_hidden_states, loss_fn, is_attn=False, is_img=False)
 
+        # 按比例選教師層對齊學生層
+        teacher_hidden_states = get_cor_teacher(teacher_hidden_states, student_hidden_states, is_attn=False)
+
+        # 確保 dtype 對齊到學生參數 dtype（只抓一次參考參數即可）
+        student_param = next(self.model.parameters())
+        target_dtype = student_param.dtype
+
+        # 僅計算最後一層
+        if self.hidden_states_last_only:
+            s_h = student_hidden_states[-1].to(dtype=target_dtype)
+            t_h = teacher_hidden_states[-1].to(dtype=target_dtype)
+            t_h_logits = t_h @ self.teacher_model.lm_head.weight.T  # 用教師 head 得到 logits
+            # --- Teacher → Student space ---
+            t2s_h = self.model.projector["t2s"](t_h)  # 投影教師 hidden 到學生空間
+            t2s_h = t2s_h.to(dtype=target_dtype)
+            # distillation loss (學生 logits vs 投影教師 logits)
+            with torch.no_grad():
+                t2s_logits = t2s_h @ self.model.lm_head.weight.detach().T  # 用學生 head 得到 logits
+                student_logits = (s_h @ self.model.lm_head.weight.T).to(dtype=target_dtype)
+            t2s_kd = F.mse_loss(student_logits, t2s_logits.detach().to(dtype=target_dtype))
+            th_kd = F.mse_loss(t2s_logits, t_h_logits.detach().to(dtype=target_dtype))
+            return (t2s_kd + th_kd) / 2
+
+        total_loss = 0.0
+        num_layers = 0
+        for s_h, t_h in zip(student_hidden_states, teacher_hidden_states):
+            # 確保 dtype 對齊到學生參數 dtype
+            s_h = s_h.to(dtype=target_dtype)
+            t_h = t_h.to(dtype=target_dtype)
+            t_h_logits = t_h @ self.teacher_model.lm_head.weight.T  # 用教師 head 得到 logits
+            # --- Teacher → Student space ---
+            t2s_h = self.model.projector["t2s"](t_h)  # 投影教師 hidden 到學生空間
+            t2s_h = t2s_h.to(dtype=target_dtype)
+            # distillation loss (學生 logits vs 投影教師 logits)
+            with torch.no_grad():
+                t2s_logits = t2s_h @ self.model.lm_head.weight.detach().T  # 用學生 head 得到 logits
+                student_logits = (s_h @ self.model.lm_head.weight.T).to(dtype=target_dtype)
+            t2s_kd = F.mse_loss(student_logits, t2s_logits.detach().to(dtype=target_dtype))
+            th_kd = F.mse_loss(t2s_logits, t_h_logits.detach().to(dtype=target_dtype))
+            total_loss += (t2s_kd + th_kd) / 2
+            num_layers += 1
+
+        if num_layers > 0:
+            total_loss = total_loss / num_layers
+
+        return total_loss
     def compute_attentions_loss(self, student_attentions, teacher_attentions,loss_fn):
         if teacher_attentions is None:
             return 0.0
@@ -199,37 +213,89 @@ class DistillSTFTrainer(SFTTrainer):
     def compute_image_hidden_states_loss(self, student_image_hidden_states, teacher_image_hidden_states,loss_fn):
         if teacher_image_hidden_states is None or student_image_hidden_states is None:
             return 0.0
-        # Vision towers are identical, no layer alignment needed
-        return get_kd_loss(student_image_hidden_states, teacher_image_hidden_states, loss_fn, is_attn=False, is_img=True)
+        # 動態對齊 projector 維度，避免 hidden 維度不一致
+        student_param = next(self.model.parameters())
+        target_dtype = student_param.dtype
+        device = student_param.device
+
+        s_h = student_image_hidden_states.to(dtype=target_dtype)
+        t_h = student_image_hidden_states.to(dtype=target_dtype)
+        t_h_logits = t_h @ self.teacher_model.lm_head.weight.T  # 用教師 head 得到 logits
+        # --- Teacher → Student space ---
+        t2s_h = self.model.projector["t2s"](t_h)  # 投影教師 hidden 到學生空間
+        t2s_h = t2s_h.to(dtype=target_dtype)
+        # distillation loss (學生 logits vs 投影教師 logits)
+        with torch.no_grad():
+            t2s_logits = t2s_h @ self.model.lm_head.weight.detach().T  # 用學生 head 得到 logits
+            student_logits = (s_h @ self.model.lm_head.weight.T).to(dtype=target_dtype)
+        t2s_kd = F.mse_loss(student_logits, t2s_logits.detach().to(dtype=target_dtype))
+        th_kd = F.mse_loss(t2s_logits, t_h_logits.detach().to(dtype=target_dtype))
+        return (t2s_kd + th_kd) / 2
 
     @overrides()
-    def compute_loss(self, model, inputs, return_outputs=False,num_items_in_batch=None):
-        # Pop the teacher's outputs from the inputs
-        teacher_hidden_states = inputs.pop("teacher_hidden_states", None)
-        teacher_attentions = inputs.pop("teacher_attentions", None)
-        teacher_image_hidden_states = inputs.pop("teacher_image_hidden_states", None)
+    def compute_loss(self, model, inputs, return_outputs=False, num_items_in_batch=None):
+        # Prepare inputs for the teacher model (without labels)
+        teacher_inputs = {
+            "input_ids": inputs.get("input_ids"),
+            "attention_mask": inputs.get("attention_mask"),
+            "pixel_values": inputs.get("pixel_values"),
+        }
+        teacher_inputs = {k: v for k, v in teacher_inputs.items() if v is not None}
 
-        # Compute the original loss from SFTTrainer
-        loss, outputs = super().compute_loss(model, inputs, return_outputs=True,num_items_in_batch=num_items_in_batch)
+        # Compute the original loss from SFTTrainer for the student
+        loss, outputs = super().compute_loss(model, inputs, return_outputs=True, num_items_in_batch=num_items_in_batch)
 
         # Get student's internal states
         student_hidden_states = outputs.hidden_states
         student_attentions = outputs.attentions
         student_image_hidden_states = outputs.image_hidden_states
 
+        teacher_hidden_states, teacher_attentions, teacher_image_hidden_states = None, None, None
+        # Teacher forward pass
+        if self.teacher_model is not None:
+            # Determine if we need hidden states or attentions from the teacher
+            output_hs = self.do_hidden_states_loss or self.do_image_hidden_states_loss
+            output_attn = self.do_attentions_loss
+
+            if output_hs or output_attn:
+                with torch.no_grad():
+                    self.teacher_model.to(model.device)
+                    teacher_outputs = self.teacher_model(
+                        **teacher_inputs,
+                        output_hidden_states=output_hs,
+                        output_attentions=output_attn,
+                    )
+                    teacher_hidden_states = teacher_outputs.get("hidden_states")
+                    teacher_attentions = teacher_outputs.get("attentions")
+                    teacher_image_hidden_states = teacher_outputs.get("image_hidden_states")
         
         # Compute the distillation loss
         mse_loss = MSELoss()
-        hidden_states_loss = self.compute_hidden_states_loss(student_hidden_states, teacher_hidden_states, mse_loss)
-        attentions_loss = self.compute_attentions_loss(student_attentions, teacher_attentions, mse_loss)
-        image_hidden_states_loss = self.compute_image_hidden_states_loss(student_image_hidden_states, teacher_image_hidden_states, mse_loss)
+        hidden_states_loss = 0.0
+        attentions_loss = 0.0
+        image_hidden_states_loss = 0.0
+
+        if self.do_hidden_states_loss:
+            hidden_states_loss = self.compute_hidden_states_loss(student_hidden_states, teacher_hidden_states)
         
-        # Combine the losses (example: simple addition, could be weighted)
+        if self.do_attentions_loss:
+            attentions_loss = self.compute_attentions_loss(student_attentions, teacher_attentions, mse_loss)
+        
+        if self.do_image_hidden_states_loss:
+            image_hidden_states_loss = self.compute_image_hidden_states_loss(student_image_hidden_states, teacher_image_hidden_states, mse_loss)
+        
+        # Combine the losses
         distill_loss = hidden_states_loss + attentions_loss + image_hidden_states_loss
 
-        # You can weigh the original loss and the distillation loss
-        # Example: loss = 0.4 * loss + 0.6 * distill_loss
-        loss += self.distill_weight * distill_loss
+        loss = self.distill_rate  * distill_loss + (1 - self.distill_rate) * loss
+        
+        # 釋放教師模型輸出所佔用的 VRAM
+        if self.teacher_model is not None and 'teacher_outputs' in locals():
+            del teacher_outputs
+            del teacher_hidden_states
+            del teacher_attentions
+            del teacher_image_hidden_states
+            torch.cuda.empty_cache()
 
         return (loss, outputs) if return_outputs else loss
 
@@ -263,10 +329,7 @@ def create_distill_data_collator(processor):
     def collate_fn(examples):
         texts = []
         images = []
-        teacher_hidden_states_list = []
-        teacher_attentions_list = []
-        teacher_image_hidden_states_list = []
-
+        
         # 1. Extract data from each sample
         for example in examples:
             image_inputs = process_vision_info(example["messages"])
@@ -279,14 +342,6 @@ def create_distill_data_collator(processor):
                 images.append(None)
             else:
                 images.append(image_inputs)
-
-            # Extract teacher outputs, ensuring they are not None
-            if "teacher_hidden_states" in example and example["teacher_hidden_states"] is not None:
-                teacher_hidden_states_list.append(example["teacher_hidden_states"])
-            if "teacher_attentions" in example and example["teacher_attentions"] is not None:
-                teacher_attentions_list.append(example["teacher_attentions"])
-            if "teacher_image_hidden_states" in example and example["teacher_image_hidden_states"] is not None:
-                teacher_image_hidden_states_list.append(example["teacher_image_hidden_states"])
 
         # 2. Process and tokenize text and images
         # 若整個 batch 都沒有圖片，傳 None；否則按樣本傳入各自的圖片列表
@@ -310,32 +365,6 @@ def create_distill_data_collator(processor):
         labels[labels == image_token_id] = -100
         labels[labels == 262144] = -100
         batch["labels"] = labels
-
-        # 4. Pad and stack the teacher's outputs
-        if teacher_hidden_states_list:
-            padded_hidden_states = []
-            # Transpose and pad each layer (每層為 [S, D]，pad 成 [B, S_max, D])
-            for layer_tensors in zip(*teacher_hidden_states_list):
-                padded_layer = pad_sequence(list(layer_tensors), batch_first=True, padding_value=0.0)
-                padded_hidden_states.append(padded_layer)
-            batch["teacher_hidden_states"] = tuple(padded_hidden_states)
-
-        if teacher_attentions_list:
-            padded_attentions = []
-            # 注意：每層 attention 反序列化後為 [H, S, S]，pad_sequence 會在第一維 (H) pad。
-            # 這裡先保持簡單策略，後續在 loss 中會以最小序列長度裁切對齊。
-            for layer_tensors in zip(*teacher_attentions_list):
-                padded_layer = pad_sequence(list(layer_tensors), batch_first=True, padding_value=0.0)
-                padded_attentions.append(padded_layer)
-            batch["teacher_attentions"] = tuple(padded_attentions)
-
-        if teacher_image_hidden_states_list:
-            padded_image_hidden_states = []
-            # 每層影像隱狀態為 [S_img, D]，pad 成 [B, S_img_max, D]
-            for layer_tensors in zip(*teacher_image_hidden_states_list):
-                padded_layer = pad_sequence(list(layer_tensors), batch_first=True, padding_value=0.0)
-                padded_image_hidden_states.append(padded_layer)
-            batch["teacher_image_hidden_states"] = tuple(padded_image_hidden_states)
 
         return batch
     return collate_fn 

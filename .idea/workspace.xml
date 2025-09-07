@@ -6,8 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="8a52bf99-ee71-49f8-93fc-86f6e8deebcf" name="Changes" comment=".">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Gemma3-12b_try_output.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Gemma3-12b_try_output.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Gemma3-4b_try_output.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Gemma3-4b_try_output.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TestDistill.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/TestDistill.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/TrainingCode/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/TrainingCode/config.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/TrainingCode/distill_gemma3_golf.py" beforeDir="false" afterPath="$PROJECT_DIR$/TrainingCode/distill_gemma3_golf.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/TrainingCode/distillation.py" beforeDir="false" afterPath="$PROJECT_DIR$/TrainingCode/distillation.py" afterDir="false" />
@@ -202,7 +202,7 @@
       <workItem from="1754390947684" duration="42596000" />
       <workItem from="1755596248350" duration="21994000" />
       <workItem from="1755773780784" duration="109185000" />
-      <workItem from="1756882216058" duration="26683000" />
+      <workItem from="1756882216058" duration="100542000" />
     </task>
     <task id="LOCAL-00001" summary=".">
       <option name="closed" value="true" />

@@ -38,12 +38,12 @@ class GolfModelEvaluator:
         """
         print(f"載入模型從: {model_path}")
         
-        target_dtype = torch.bfloat16 if self.config.torch_dtype == "bfloat16" else torch.float16
+        target_dtype = torch.bfloat16
         self.model = AutoModelForImageTextToText.from_pretrained(
             model_path,
-            device_map=self.config.device_map,
+            device_map=self.config.eval_device_map,
             torch_dtype=target_dtype,
-            attn_implementation=self.config.attn_implementation,
+            attn_implementation=self.config.eval_attn_implementation,
         )
         
         # 優先從 model_path 載入對應的 processor，否則退回 processor_id

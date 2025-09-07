@@ -11,6 +11,7 @@ import torch
 from tqdm import tqdm
 from transformers import AutoProcessor, AutoModelForImageTextToText
 import gc
+import gzip
 
 from config import TrainingConfig
 # 匯入微調腳本中的數據處理邏輯
@@ -105,11 +106,14 @@ def generate_distill_data(args):
 
         # 將每個張量列表儲存到獨立的 .pt 檔案
         if hs_list_cpu:
-            torch.save(hs_list_cpu, os.path.join(sample_output_dir, "teacher_hidden_states.pt"))
+            with gzip.open(os.path.join(sample_output_dir, "teacher_hidden_states.pt.gz"), "wb") as f:
+                torch.save(hs_list_cpu, f)
         if attn_list_cpu:
-            torch.save(attn_list_cpu, os.path.join(sample_output_dir, "teacher_attentions.pt"))
+            with gzip.open(os.path.join(sample_output_dir, "teacher_attentions.pt.gz"), "wb") as f:
+                torch.save(attn_list_cpu, f)
         if img_hs_list_cpu:
-            torch.save(img_hs_list_cpu, os.path.join(sample_output_dir, "teacher_image_hidden_states.pt"))
+            with gzip.open(os.path.join(sample_output_dir, "teacher_image_hidden_states.pt.gz"), "wb") as f:
+                torch.save(img_hs_list_cpu, f)
 
         # 釋放 GPU/CPU 資源
         del out, inputs, inputs_cpu, hs_list_cpu, attn_list_cpu, img_hs_list_cpu
