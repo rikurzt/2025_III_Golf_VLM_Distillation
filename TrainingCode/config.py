@@ -13,7 +13,7 @@ class TrainingConfig:
     def __init__(self):
         # 實驗配置
 
-        self.file_locate = "/tmp/pycharm_project_682/"  # 遠端環境，根據部署地做更改
+        self.file_locate = "/tmp/pycharm_project_133/"  # 遠端環境，根據部署地做更改
         
         # 數據配置
         self.data_type = "mergedata"
@@ -71,11 +71,12 @@ class TrainingConfig:
         self.ds_optim = "adamw_torch_fused"
         self.ds_save_strategy = "epoch"
         self.ds_logging_steps = 1
+        self.distill_rate = 0.000001  # 0.000001 if  ds_hidden_states_last_only = false
 
         # 蒸餾損失計算開關
         self.ds_do_hidden_states_loss = True
         self.ds_do_attentions_loss = False
-        self.ds_do_image_hidden_states_loss = False
+        self.ds_do_image_hidden_states_loss = True
         self.ds_hidden_states_last_only = False
 
         # 其他共用
@@ -86,7 +87,7 @@ class TrainingConfig:
         self.max_new_tokens = 512
         self.top_p = 0.95
         self.temperature = 0.7
-        self.eval_test_count = 5
+        self.eval_test_count = 50
         self.eval_random_select = False
         self.eval_output_dir = "experiment_result"
         self.eval_device_map = "auto"
@@ -95,7 +96,6 @@ class TrainingConfig:
         # 蒸餾資料/教師與合併
         self.teacher_model_path = self.model_id
         self.distill_dataset_locate = "dataset/distill_teacher_signals"
-        self.distill_rate = 0.000001#0.000001 if  ds_hidden_states_last_only = false
         self.merged_model_path = "model/merged_teacher_model"
         self.lora_alpha = 16
         self.lora_dropout = 0.05
